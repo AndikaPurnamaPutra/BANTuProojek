@@ -1,0 +1,161 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+@theme {
+  ----default-font-family: "Lexend", serif;
+  --font-Lexend: "Lexend", serif;
+  --font-Parkinsans: "Parkinsans", serif;
+
+  --container-max-width: 1440px;
+  --container-padding: 100px;
+  --container-padding-tablet: 50px;
+  --container-padding-mobile: 30px;
+  --container-margin-inline: auto;
+
+  --blue: #344EAD;
+  --blue-light: #6F96D1;
+  --gray: #5E615E;
+  --gray-light: #AAB5BF;
+  --green: #DCF343;
+  --green-light: #E8F9A1;
+
+  --black: #000000;
+  --white: #FFFFFF;
+}
+
+body {
+  font-family: var(--font-Lexend);
+  /* font-weight: var(--font-normal); */
+  line-height: 180%;
+  color: var(--gray);
+  background-color: #FFF9EF;
+}
+
+.container {
+  max-width: var(--container-max-width);
+  padding-inline: var(--container-padding);
+  margin-inline: var(--container-margin-inline);
+}
+
+button, a, Link {
+  cursor: pointer;
+}
+
+/* Custom Container untuk Tablet & Mobile */
+@media (max-width: 1024px) { /* ✅ Ukuran Tablet (`lg`) */
+  .container {
+    padding-inline: var(--container-padding-tablet);
+  }
+}
+
+@media (max-width: 768px) { /* ✅ Ukuran Mobile (`md`) */
+  .container {
+    padding-inline: var(--container-padding-mobile);
+  }
+}
+
+.title-h1 {
+  font-family: var(--font-Parkinsans);
+  font-weight: var(--font-medium);
+  font-size: 108px;
+  color: var(--blue);
+  line-height: 100%;
+}
+
+.title-h2 {
+  font-family: var(--font-Parkinsans);
+  font-weight: var(--font-medium);
+  font-size: 56px;
+  line-height: 150%;
+  color: var(--black);
+}
+
+.desc {
+  font-family: var(--font-Parkinsans);
+  font-weight: var(--font-light);
+  font-size: 18px;
+  line-height: 180%;
+  color: var(--gray-light);
+}
+
+.ornamen-box-1 {
+  width: 295px;
+  height: 323px;
+  background-color: #F3F3F3;
+}
+
+.ornamen-box-2 {
+  width: 212px;
+  height: 232px;
+  background-color: #BAD6EB;
+}
+
+.ornamen-box-3 {
+  width: 198px;
+  height: 217px;
+  background-color: #6F96D1;
+}
+
+.ornamen-box-4 {
+  padding: 37px;
+  background-color: #DCF343;
+}
+
+.after-circle {
+  position: relative;
+}
+
+.after-circle::after {
+  content: "";
+  position: relative;
+  top: 0;
+  right: 0;
+  width: 56px;
+  height: 56px;
+  background-color: #BAD6EB;
+  border-radius: 9999px;
+  z-index: -1;
+}
+
+.bg-highlight {
+  position: relative;
+}
+
+.bg-highlight::after {
+  content: "";
+  position: absolute;
+  width: 112%;
+  height: 85%;
+  background-color: #DCF343;
+  border-radius: 12px;
+  top: 50%;
+  left: 50%;
+  transform: rotate(3deg) translate(-50%, -50%);
+  z-index: -1;
+}
+
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+.bg-linear-backword {
+  background-image: linear-gradient(to left, rgb(255, 249, 239, 0) 0%, #FFF9EF 50%);
+}
+
+.bg-linear-forword {
+  background-image: linear-gradient(to right, rgb(255, 249, 239, 0) 0%, #FFF9EF 50%);
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield; /* Untuk Firefox */
+}
