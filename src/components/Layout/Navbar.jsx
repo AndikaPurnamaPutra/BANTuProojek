@@ -84,9 +84,9 @@ const Navbar = () => {
   return (
     <>
       <nav className="bg-[#FFF9EF] border-b-2 border-b-[#F3F3F3] sticky top-0 z-50">
-        <div className="container flex items-center justify-between py-8">
+        <div className="container flex items-center justify-between py-8 max-lg:py-5">
           <Link to="/" className="flex items-center">
-            <img src={logo} className="max-w-[108px] w-full" alt="Logo" />
+            <img src={logo} className="max-w-[108px] w-full max-lg:w-[72px]" alt="Logo" />
           </Link>
 
           <div className="flex items-center gap-4 lg:hidden">
@@ -105,7 +105,7 @@ const Navbar = () => {
               </Link>
             )}
             <button onClick={() => setIsOpen(!isOpen)} className="lg:hidden">
-              {isOpen ? <X size={28} /> : <AlignJustify size={28} />}
+              {isOpen ? <X size={22} /> : <AlignJustify size={22} />}
             </button>
           </div>
 
@@ -158,7 +158,7 @@ const Navbar = () => {
 
         <div
           className={`absolute top-full left-0 right-0 bg-white transition-all duration-500 ease-in-out overflow-hidden lg:hidden ${
-            isOpen ? 'h-screen p-6' : 'h-0'
+            isOpen ? 'h-[calc(100dvh-60px)] p-6 ' : 'h-0'
           }`}
         >
           <div

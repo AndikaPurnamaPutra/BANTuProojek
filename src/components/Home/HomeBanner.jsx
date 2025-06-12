@@ -5,10 +5,10 @@ import HomeBannerOrnament from '../../assets/images/homeBanner-ornamen.svg';
 const HomeBanner = () => {
   return (
     <>
-      <section className='home-banner pb-[120px]'>
+      <section className='home-banner pb-[120px] max-lg:pb-[60px]'>
         <div className="container">
-          <div className="content flex justify-between items-center gap-[50px]">
-            <div className="content-sub">
+          <div className="content flex justify-between items-center gap-[50px] max-lg:flex-col">
+            <div className="content-sub max-lg:hidden">
               <img src={HomeBannerImage} className="w-full"></img>
             </div>
             <div className="content-sub max-w-[685px] flex flex-col gap-8">

@@ -6,7 +6,7 @@ const HomePortofolio = () => {
       <section className="home-portofolio pt-[178px] pb-[144px] max-lg:py-[64px]">
         <div className="container">
           <div className="content flex flex-col gap-10">
-            <div className="content-sub flex justify-between items-center max-lg:flex-col max-lg:items-start max-lg:gap-6">
+            <div className="content-sub flex justify-between items-center max-lg:flex-col max-lg:items-start max-lg:gap-6 max-md:gap-4">
               <h2 className="title-h2 max-w-[585px]">
                 Temukan Karya Terbaik{' '}
                 <span className="bg-highlight">Disini</span>

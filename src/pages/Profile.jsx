@@ -11,13 +11,13 @@ const Profile = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Ambil data user login sekaligus
+    // Ambil data user login (boleh gagal → kalau 401 → set currentUser null)
     const fetchCurrentUser = async () => {
       try {
         const res = await getProfile();
         setCurrentUser(res.data);
       } catch {
-        setCurrentUser(null);
+        setCurrentUser(null); // kalau tidak login → biarkan null → ini normal
       }
     };
     fetchCurrentUser();
@@ -28,24 +28,32 @@ const Profile = () => {
       try {
         let res;
         if (id) {
-          // Ambil user by ID jika ada param id
+          // Ambil user by ID → public profile
           res = await getUserById(id);
         } else {
           // Ambil profile user login
           res = await getProfile();
         }
         setUser(res.data);
-      } catch {
-        setError('Gagal memuat profil. Silakan coba lagi.');
+      } catch (error) {
+        if (error.response?.status === 404) {
+          setError('Profil tidak ditemukan.');
+        } else if (error.response?.status === 401) {
+          // Public profile /profile/:id → kalau 401 → cukup tampil pesan ramah
+          setError('Profil ini tidak dapat diakses saat ini.');
+        } else {
+          setError('Terjadi kesalahan saat memuat profil.');
+        }
       }
     };
     fetchUser();
   }, [id]);
 
+  // Loading & error state
   if (error) return <p className="text-center mt-20">{error}</p>;
   if (!user) return <p className="text-center mt-20">Loading profil...</p>;
 
-  // Tentukan apakah ini profil sendiri dengan membandingkan user login dan user yang dilihat
+  // Tentukan apakah ini profil sendiri
   const isOwnProfile = currentUser && user && currentUser._id === user._id;
 
   const portfolios = user.portfolios || [];
@@ -98,7 +106,9 @@ const Profile = () => {
           {portfolios.length > 0 ? (
             portfolios.map((portfolio) => {
               const isLiked = portfolio.likes
-                ? portfolio.likes.some((likeUserId) => likeUserId.toString() === userId.toString())
+                ? portfolio.likes.some(
+                    (likeUserId) => likeUserId.toString() === userId.toString()
+                  )
                 : false;
 
               return (
@@ -113,9 +123,7 @@ const Profile = () => {
                   }
                   author={user.firstName || user.username}
                   profile={
-                    user.profilePic
-                      ? user.profilePic
-                      : 'defaultProfilePic.jpg'
+                    user.profilePic ? user.profilePic : 'defaultProfilePic.jpg'
                   }
                   likes={portfolio.likes ? portfolio.likes.length : 0}
                   initialLiked={isLiked}
@@ -123,7 +131,9 @@ const Profile = () => {
               );
             })
           ) : (
-            <p className="text-center text-gray-500">Belum ada karya yang diunggah.</p>
+            <p className="text-center text-gray-500">
+              Belum ada karya yang diunggah.
+            </p>
           )}
         </div>
       </div>

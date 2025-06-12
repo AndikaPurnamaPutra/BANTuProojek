@@ -9,7 +9,7 @@
   --container-max-width: 1440px;
   --container-padding: 100px;
   --container-padding-tablet: 50px;
-  --container-padding-mobile: 30px;
+  --container-padding-mobile: 20px;
   --container-margin-inline: auto;
 
   --blue: #344EAD;
@@ -62,6 +62,17 @@ button, a, Link {
   line-height: 100%;
 }
 
+@media (max-width: 1024px) { /* ✅ Ukuran Tablet (`lg`) */
+  .title-h1 {
+    font-size: 82px;
+  }
+}
+@media (max-width: 480px) { /* ✅ Ukuran Mobile (`md`) */
+  .title-h1 {
+    font-size: 42px;
+  }
+}
+
 .title-h2 {
   font-family: var(--font-Parkinsans);
   font-weight: var(--font-medium);
@@ -70,12 +81,24 @@ button, a, Link {
   color: var(--black);
 }
 
+@media (max-width: 767px) { /* ✅ Ukuran Tablet (`lg`) */
+  .title-h2 {
+    font-size: 36px;
+  }
+}
+
 .desc {
   font-family: var(--font-Parkinsans);
   font-weight: var(--font-light);
   font-size: 18px;
   line-height: 180%;
   color: var(--gray-light);
+}
+
+@media (max-width: 767px) { /* ✅ Ukuran Tablet (`lg`) */
+  .desc {
+    font-size: 16px;
+  }
 }
 
 .ornamen-box-1 {
@@ -115,6 +138,12 @@ button, a, Link {
   background-color: #BAD6EB;
   border-radius: 9999px;
   z-index: -1;
+}
+
+@media (max-width: 1024px) { /* ✅ Ukuran Tablet (`lg`) */
+  .after-circle::after {
+    display: none;
+  }
 }
 
 .bg-highlight {

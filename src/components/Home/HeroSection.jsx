@@ -12,14 +12,14 @@ const HeroSection = () => {
     <>
       <section className="hero-section pt-16">
         <div className="container">
-          <div className="content flex flex-col gap-12 max-lg:gap-16">
-            <div className="content-sub flex flex-col gap-0.5 items-end">
+          <div className="content flex flex-col gap-12">
+            <div className="content-sub flex flex-col gap-0.5 items-end max-xl:items-start">
               <h1 className="title-h1">Bantu Perkenalkan</h1>
-              <h1 className="title-h1 text-(--blue-light)! mr-64 max-lg:mr-[unset]">
+              <h1 className="title-h1 text-(--blue-light)! mr-64 max-xl:mr-[unset]">
                 Karya Terbaikmu
               </h1>
             </div>
-            <div className="content-sub flex items-end justify-center relative max-lg:hidden">
+            <div className="content-sub flex items-end justify-center relative max-xl:hidden">
               <img
                 src={heroImage1}
                 alt="heroImage1"
@@ -64,11 +64,11 @@ const HeroSection = () => {
               />
               <img
                 src={heroOrnamen3}
-                className="absolute left-[291px] top-[-58px] z-[-1]"
+                className="absolute left-[291px] top-[-58px] z-[-1] max-md:hidden"
               ></img>
               <img
                 src={heroOrnamen4}
-                className="absolute right-[301px] bottom-[-58px] z-[-1]"
+                className="absolute right-[301px] bottom-[-58px] z-[-1] max-md:hidden"
               ></img>
             </div>
           </div>

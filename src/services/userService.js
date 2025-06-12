@@ -17,7 +17,7 @@ export const getProfile = () => {
   return api.get('/users/profile');
 };
 
-// Ambil data user berdasarkan id
+// Ambil data user berdasarkan id → PUBLIC REQUEST → tanpa token
 export const getUserById = (id) => {
-  return api.get(`/users/${id}`);
+  return api.get(`/users/${id}`, { headers: { 'No-Auth': true } });
 };
