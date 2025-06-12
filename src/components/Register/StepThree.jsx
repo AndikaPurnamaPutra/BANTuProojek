@@ -16,7 +16,7 @@ const StepThree = ({ formData, handleChange, nextStep, prevStep }) => {
   };
 
   return (
-    <section className="w-full bg-white flex items-center px-[50px] py-30">
+    <section className="w-full bg-white flex items-center px-[50px] py-30 max-md:p-7 max-md:h-svh">
       <div className="flex flex-col gap-8 w-full">
         <div className="flex flex-col gap-5 border-b-[1px] border-[#D4DADF] pb-[30px]">
           <h2 className="font-Parkinsans text-[32px] font-medium leading-[150%] text-blue-700">
@@ -31,7 +31,7 @@ const StepThree = ({ formData, handleChange, nextStep, prevStep }) => {
           {/* Pilihan Role */}
           <div className="flex flex-col gap-3 w-full">
             <label className="text-lg font-light text-[#7F909F]">Pilih Role</label>
-            <div className="flex gap-4">
+            <div className="flex gap-4 max-md:flex-col">
               {/* Designer Option */}
               <div className="flex flex-col items-end p-5 border border-[#D4DADF] rounded-md w-full">
                 <input

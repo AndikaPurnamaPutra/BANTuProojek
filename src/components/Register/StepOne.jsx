@@ -16,9 +16,9 @@ const StepOne = ({ formData, handleChange, nextStep }) => {
   };
 
   return (
-    <section className="w-full bg-white flex items-center px-[50px] py-30">
+    <section className="w-full bg-white flex items-center px-[50px] py-30 max-md:p-8">
       <div className="flex flex-col gap-8 w-full">
-        <div className="flex flex-col gap-5 border-b-[1px] border-[#D4DADF] pb-[30px]">
+        <div className="flex flex-col gap-5 border-b-[1px] border-[#D4DADF] pb-[30px] max-md:gap-2">
           <h2 className=" font-Parkinsans text-[32px] font-medium leading-[150%] text-(--blue)">
             Buat Akun
           </h2>
@@ -28,7 +28,7 @@ const StepOne = ({ formData, handleChange, nextStep }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          <div className="flex justify-between gap-5">
+          <div className="flex justify-between gap-5 max-md:flex-col max-md:gap-4">
             <InputField
               label="Nama Depan"
               name="namaDepan"

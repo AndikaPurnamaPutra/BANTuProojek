@@ -80,21 +80,21 @@ const Portfolio = () => {
   return (
     <section className="px-6 py-16">
       <div className="max-w-screen-xl mx-auto">
-        <h1 className="text-5xl font-bold text-[var(--blue)] mb-6">
+        <h1 className="text-5xl font-bold text-[var(--blue)] mb-6 max-md:text-4xl">
           Portofolio
         </h1>
 
         {/* Tabs dan Search */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
+        <div className="flex flex-col xl:flex-row justify-between items-start md:items-center gap-4 mb-10 max-lg:flex-col-reverse">
           <PortfolioTabs active={activeCategory} onChange={setActiveCategory} />
 
-          <div className="relative w-full md:w-64">
+          <div className="relative w-full xl:w-64">
             <input
               type="text"
               placeholder="Cari portofolio..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--blue)]"
+              className="w-full border border-gray-300 rounded-full px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-(--blue)"
               aria-label="Cari portofolio"
             />
             <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400">
@@ -111,7 +111,7 @@ const Portfolio = () => {
         )}
 
         {/* Grid Portofolio */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-6">
           {visibleItems.length > 0
             ? visibleItems.map((item) => (
                 <PortfolioItem

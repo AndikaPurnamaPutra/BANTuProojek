@@ -92,8 +92,8 @@ const Register = () => {
   return (
     <>
       <section className="max-w-[1440px] mx-auto">
-        <div className="flex">
-          <div className="max-w-[640px] shrink-0 min-h-screen">
+        <div className="flex max-xl:h-screen">
+          <div className="max-w-[640px] shrink-0 min-h-screen max-xl:hidden">
             <img
               src={LoginBackground}
               className="w-full h-full object-cover"

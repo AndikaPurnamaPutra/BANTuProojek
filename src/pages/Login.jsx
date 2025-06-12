@@ -54,8 +54,8 @@ const Login = () => {
   return (
     <section>
       <div className="max-w-[1440px] mx-auto">
-        <div className="flex">
-          <div className="max-w-[640px] shrink-0 min-h-screen">
+        <div className="flex max-xl:h-screen">
+          <div className="max-w-[640px] shrink-0 min-h-screen max-xl:hidden">
             <img
               src={LoginBackground}
               className="w-full h-full object-cover"
@@ -81,7 +81,7 @@ const Login = () => {
 
               <div>
                 <form onSubmit={handleSubmit}>
-                  <div className="mb-12.5 flex flex-col gap-3">
+                  <div className="mb-12.5 flex flex-col gap-3 max-lg:mb-8">
                     <label
                       htmlFor="email"
                       className="text-lg font-light leading-[180%] text-[#7F909F]"
@@ -100,7 +100,7 @@ const Login = () => {
                     />
                   </div>
 
-                  <div className="mb-12.5 flex flex-col gap-3 relative">
+                  <div className="mb-12.5 flex flex-col gap-3 relative max-lg:mb-8">
                     <label
                       htmlFor="password"
                       className="text-lg font-light leading-[180%] text-[#7F909F]"

@@ -72,7 +72,7 @@ const PortfolioItem = ({
           <img
             src={profile}
             alt="Profile"
-            className="w-6 h-6 rounded-full object-center border-2 border-(--blue-light)"
+            className="w-6 h-6 rounded-full object-cover border-2 border-(--blue-light)"
           />
           <span className="text-[14px]">{author}</span>
         </Link>

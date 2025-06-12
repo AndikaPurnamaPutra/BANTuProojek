@@ -51,7 +51,7 @@ const StepFour = ({
   };
 
   return (
-    <section className="w-full bg-white flex items-center px-[50px] py-30">
+    <section className="w-full bg-white flex items-center px-[50px] py-30 max-md:p-8">
       <div className="flex flex-col gap-8 w-full">
         {error && (
           <div className="p-3 mb-4 bg-red-100 text-red-600 text-center rounded">

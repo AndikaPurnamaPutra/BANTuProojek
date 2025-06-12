@@ -44,9 +44,9 @@ const StepTwo = ({
   };
 
   return (
-    <section className="w-full bg-white flex items-center px-[50px] py-30">
+    <section className="w-full bg-white flex items-center px-[50px] py-30 max-md:p-7">
       <div className="flex flex-col gap-8 w-full">
-        <div className="flex flex-col gap-5 border-b-[1px] border-[#D4DADF] pb-[30px]">
+        <div className="flex flex-col gap-5 border-b-[1px] border-[#D4DADF] pb-[30px] max-md:gap-2">
           <h2 className="font-Parkinsans text-[32px] font-medium leading-[150%] text-blue-700">
             Ayo Lengkapi Profil Kamu!
           </h2>
@@ -59,7 +59,7 @@ const StepTwo = ({
           {/* Foto Profil */}
           <div className="flex flex-col gap-3">
             <label className="text-lg font-light text-[#7F909F]">Foto Profil<span className="text-red-500">*</span></label>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 max-md:flex-col max-md:items-start">
               {imagePreview ? (
                 <img
                   src={imagePreview}

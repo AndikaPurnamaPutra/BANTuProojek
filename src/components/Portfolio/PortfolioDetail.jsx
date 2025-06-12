@@ -106,8 +106,8 @@ const PortfolioDetail = () => {
       </button>
 
       <div
-        className={`relative bg-[#FFF9EF] rounded-t-[12px] w-full h-[calc(100vh-40px)] overflow-y-scroll cursor-default 
-          pt-16 px-6 md:px-[100px] pb-24 transition-all duration-300 gap-14 flex flex-col
+        className={`relative bg-[#FFF9EF] rounded-t-[12px] w-full h-[calc(100dvh-40px)] overflow-y-scroll cursor-default 
+          pt-32 px-8 lg:px-[120px] pb-24 transition-all duration-300 gap-14 max-lg:gap-8 flex flex-col max-lg:pt-20
           ${
             showModal
               ? 'translate-y-0 opacity-100'
@@ -115,11 +115,11 @@ const PortfolioDetail = () => {
           }`}
         onClick={(e) => e.stopPropagation()}
       >
-        <h1 className="text-[56px] leading-[150%] text-[var(--blue)] font-bold max-w-[1240px]">
+        <h1 className="text-[56px] leading-[150%] text-[var(--blue)] font-bold max-w-[1240px] max-lg:text-5xl max-md:text-[32px] max-md:leading-[130%]">
           {item.title}
         </h1>
 
-        <div className="flex justify-between items-center bg-[#FFF9EF]">
+        <div className="flex justify-between items-center bg-[#FFF9EF] max-md:flex-col max-md:gap-4 max-md:items-start">
           <Link
             to={`/profile/${item.creatorID._id}`}
             className="flex items-center gap-3"
@@ -158,8 +158,8 @@ const PortfolioDetail = () => {
 
         {otherMedia.length > 0 && (
           <div className="flex flex-col gap-12 mt-16">
-            <div className="flex justify-between items-end">
-              <h2 className="text-[42px] leading-[150%] text-[var(--blue)] font-bold">
+            <div className="flex justify-between items-end max-md:flex-col max-md:items-start max-md:gap-4">
+              <h2 className="text-[42px] leading-[150%] text-[var(--blue)] font-bold max-md:text-3xl max-md:leading-[130%]">
                 More Preview
               </h2>
               <Link to={`/profile/${item.creatorID._id}`}>
@@ -179,8 +179,8 @@ const PortfolioDetail = () => {
           </div>
         )}
 
-        <div className="flex flex-col justify-center items-center gap-8 bg-white mt-16 py-14 px-10 rounded-3xl">
-          <h2 className="text-[36px] text-[var(--blue)] font-bold leading-[150%]">
+        <div className="flex flex-col justify-center items-center gap-8 bg-white mt-16 py-14 px-10 rounded-3xl max-md:px-6 max-md:py-8">
+          <h2 className="text-[36px] text-[var(--blue)] font-bold leading-[150%] max-md:text-[32px]">
             Hire Me!
           </h2>
           <Link
