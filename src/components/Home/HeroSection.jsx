@@ -12,7 +12,7 @@ const HeroSection = () => {
     <>
       <section className="hero-section pt-16">
         <div className="container">
-          <div className="content flex flex-col gap-12">
+          <div className="content flex flex-col gap-12 max-md:gap-6">
             <div className="content-sub flex flex-col gap-0.5 items-end max-xl:items-start">
               <h1 className="title-h1">Bantu Perkenalkan</h1>
               <h1 className="title-h1 text-(--blue-light)! mr-64 max-xl:mr-[unset]">
@@ -49,7 +49,7 @@ const HeroSection = () => {
                 </div>
               </div>
             </div>
-            <div className="content-sub flex justify-between gap-7 relative mt-[138px] max-lg:mt-[unset] max-lg:flex-col">
+            <div className="content-sub flex justify-between gap-7 relative mt-[138px] max-lg:mt-[unset] max-lg:flex-col max-md:gap-4">
               <CardHero
                 title="Sarana Kenalkan Karya"
                 description="Memperkenalkan karya-karya desain kepada pasar yang lebih luas, baik secara lokal maupun internasional."

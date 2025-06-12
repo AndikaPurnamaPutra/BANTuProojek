@@ -86,7 +86,11 @@ const Navbar = () => {
       <nav className="bg-[#FFF9EF] border-b-2 border-b-[#F3F3F3] sticky top-0 z-50">
         <div className="container flex items-center justify-between py-8 max-lg:py-5">
           <Link to="/" className="flex items-center">
-            <img src={logo} className="max-w-[108px] w-full max-lg:w-[72px]" alt="Logo" />
+            <img
+              src={logo}
+              className="max-w-[108px] w-full max-lg:w-[72px]"
+              alt="Logo"
+            />
           </Link>
 
           <div className="flex items-center gap-4 lg:hidden">
@@ -101,7 +105,9 @@ const Navbar = () => {
                 ) : (
                   <User size={28} className="text-blue-600" />
                 )}
-                <span>{user.firstName}</span>
+                <span className="text-(--blue) text-sm max-md:hidden">
+                  {user.firstName}
+                </span>
               </Link>
             )}
             <button onClick={() => setIsOpen(!isOpen)} className="lg:hidden">
@@ -166,7 +172,12 @@ const Navbar = () => {
               isOpen ? 'opacity-100' : 'opacity-0'
             }`}
           >
-            <NavLinks />
+            <NavLinks
+              isLoggedIn={isLoggedIn}
+              onShowLoginPopup={openLoginPopup}
+              onShowLoginPopupForJob={openLoginPopupForJob}
+              onLinkClick={() => setIsOpen(false)}
+            />
             {!isLoggedIn ? (
               <div className="flex flex-col w-full gap-4">
                 <Button className="w-full" to="/login" variant="outline">

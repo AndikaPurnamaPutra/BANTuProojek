@@ -5,7 +5,7 @@ import ForumOrnament from '../../assets/images/homeForum-ornamen.svg';
 const HomeForum = () => {
   return (
     <>
-      <section className='home-forum pb-[120px]'>
+      <section className='home-forum pb-[120px] max-lg:pb-16'>
         <div className="container">
           <div className="content flex gap-[33px] items-end max-lg:flex-col">
             <div className="content-sub flex flex-col items-start gap-5 max-w-[617px] max-lg:max-w-full">
