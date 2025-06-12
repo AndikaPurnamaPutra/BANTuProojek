@@ -54,7 +54,7 @@ const Login = () => {
   return (
     <section>
       <div className="max-w-[1440px] mx-auto">
-        <div className="flex max-xl:h-screen">
+        <div className="flex max-xl:min-h-screen">
           <div className="max-w-[640px] shrink-0 min-h-screen max-xl:hidden">
             <img
               src={LoginBackground}

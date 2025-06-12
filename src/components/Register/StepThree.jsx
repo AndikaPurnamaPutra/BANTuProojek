@@ -16,7 +16,7 @@ const StepThree = ({ formData, handleChange, nextStep, prevStep }) => {
   };
 
   return (
-    <section className="w-full bg-white flex items-center px-[50px] py-30 max-md:p-7 max-md:h-svh">
+    <section className="w-full bg-white flex items-center px-[50px] py-30 max-md:p-7 max-md:min-h-svh">
       <div className="flex flex-col gap-8 w-full">
         <div className="flex flex-col gap-5 border-b-[1px] border-[#D4DADF] pb-[30px]">
           <h2 className="font-Parkinsans text-[32px] font-medium leading-[150%] text-blue-700">
