@@ -7,8 +7,8 @@ const ServiceItem = ({
   to = '#',
 }) => {
   return (
-    <Link to={to} data-discover="true" className="group">
-      <div className="flex relative items-center justify-between pb-3 border-b border-[#D4DADF]">
+    <Link to={to}>
+      <div className="flex relative items-center justify-between pb-3 border-b border-[#D4DADF] group" data-discover="true">
         <div className="after-circle flex items-center justify-center flex-row-reverse max-lg:hidden">
           <h3 className="font-Parkinsans text-[56px] leading-[150%] text-[var(--blue)] ml-[-18px]">
             {number}
