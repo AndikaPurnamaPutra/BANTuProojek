@@ -38,7 +38,7 @@ const Job = () => {
   }
 
   return (
-    <section className="job pt-[65px] pb-[100px]">
+    <section className="job pt-[65px] pb-[100px] min-h-screen">
       <div className="container">
         <div className="flex flex-col gap-12">
           <div className="relative inline-flex w-fit">

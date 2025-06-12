@@ -27,7 +27,7 @@ const Forum = () => {
   }, []);
 
   return (
-    <div className="container mx-auto py-25">
+    <div className="container mx-auto py-25 min-h-screen">
       <header className="flex justify-between items-center mb-8">
         <h1 className=" text-[62px] font-semibold text-(--blue)">Forum</h1>
         <Button variant="outline" onClick={handlePostTopicClick}>

@@ -28,7 +28,7 @@ const Article = () => {
 
   return (
     <>
-      <section>
+      <section className='min-h-screen'>
         <div className="container">
           <div className="flex flex-col gap-[50px] pt-[65px] pb-[100px]">
             <div className="relative inline-flex w-fit">

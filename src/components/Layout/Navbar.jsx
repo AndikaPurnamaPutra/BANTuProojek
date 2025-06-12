@@ -115,7 +115,7 @@ const Navbar = () => {
             </button>
           </div>
 
-          <div className="hidden lg:flex lg:gap-[60px]">
+          <div className="hidden lg:flex lg:gap-8 xl:gap-[60px]">
             <NavLinks
               isLoggedIn={isLoggedIn}
               onShowLoginPopup={openLoginPopup} // default popup

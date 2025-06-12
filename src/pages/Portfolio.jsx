@@ -78,7 +78,7 @@ const Portfolio = () => {
   }, [isLoading, visibleCount, filtered.length]);
 
   return (
-    <section className="px-6 py-16">
+    <section className="px-6 py-16 min-h-screen">
       <div className="max-w-screen-xl mx-auto">
         <h1 className="text-5xl font-bold text-[var(--blue)] mb-6 max-md:text-4xl">
           Portofolio

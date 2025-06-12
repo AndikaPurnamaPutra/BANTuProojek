@@ -20,7 +20,7 @@ const HomeForum = () => {
             </div>
             <div className="content-sub relative">
               <img src={ForumImage} className='w-full rounded-[50px]'></img>
-              <img src={ForumOrnament} className='absolute top-[-25px] right-[-72px] max-lg:hidden'></img>
+              <img src={ForumOrnament} className='absolute top-[-25px] right-[-72px] max-xl:hidden'></img>
             </div>
           </div>
         </div>

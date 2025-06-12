@@ -30,7 +30,7 @@ const Event = () => {
   if (loading) return <p className="container text-center py-20">Loading...</p>;
 
   return (
-    <div className="event pt-[65px] pb-[100px] flex flex-col gap-[100px]">
+    <div className="event pt-[65px] pb-[100px] flex flex-col gap-[100px] min-h-screen">
       <EventHeader />
       <EventMoment multimedia={multimedia} />
       <EventOverview events={events} />
