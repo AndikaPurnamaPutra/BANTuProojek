@@ -21,25 +21,25 @@ const HomePortofolio = () => {
                 number={1}
                 className="cursor-pointer"
                 title="User Interface Design"
-                to="/portfolio"
+                to="/portfolio?category=ui/ux design"
               />
               <ServiceItem
                 number={2}
                 className="cursor-pointer"
                 title="Branding"
-                to="/portfolio"
+                to="/portfolio?category=branding"
               />
               <ServiceItem
                 number={3}
                 className="cursor-pointer"
                 title="Fotografi"
-                to="/portfolio"
+                to="/portfolio?category=photography"
               />
               <ServiceItem
                 number={4}
                 className="cursor-pointer"
                 title="Ilustrasi"
-                to="/portfolio"
+                to="/portfolio?category=illustration"
               />
             </div>
           </div>

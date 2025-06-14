@@ -45,15 +45,21 @@ const ForumAddNewDiscussion = () => {
     <>
       <section className="py-16">
         <div className="container flex flex-col">
-          <div className="flex flex-col gap-[50px] bg-white p-12 rounded-[20px] shadow-lg">
+          <div className="flex flex-col gap-[50px] bg-white p-12 rounded-[20px] shadow-lg max-md:gap-8 max-md:p-6">
             <div>
-              <h2 className="text-[32px] font-bold text-gray-800 pb-12 border-b-[1px] border-[#D4DADF]">
+              <h2 className="text-[32px] font-bold text-gray-800 pb-12 border-b-[1px] border-[#D4DADF] max-md:pb-6">
                 Diskusi Baru
               </h2>
             </div>
-            <form onSubmit={handleSubmit} className="flex flex-col items-start gap-[50px]">
+            <form
+              onSubmit={handleSubmit}
+              className="flex flex-col items-start gap-[50px] max-md:gap-8"
+            >
               <div className="flex flex-col gap-5 w-full">
-                <label className="block text-lg font-medium text-gray-700" htmlFor="title">
+                <label
+                  className="block text-lg font-medium text-gray-700"
+                  htmlFor="title"
+                >
                   Judul Diskusi
                 </label>
                 <input
@@ -68,7 +74,10 @@ const ForumAddNewDiscussion = () => {
               </div>
 
               <div className="flex flex-col gap-5 w-full">
-                <label className="block text-lg font-medium text-gray-700" htmlFor="description">
+                <label
+                  className="block text-lg font-medium text-gray-700"
+                  htmlFor="description"
+                >
                   Deskripsi
                 </label>
                 <textarea
@@ -91,8 +100,15 @@ const ForumAddNewDiscussion = () => {
         </div>
       </section>
 
-      {showSuccessPopup && <ForumAddSuccessPopup onClose={() => setShowSuccessPopup(false)} />}
-      {showLoginPopup && <LoginPopup isOpen={showLoginPopup} onClose={() => setShowLoginPopup(false)} />}
+      {showSuccessPopup && (
+        <ForumAddSuccessPopup onClose={() => setShowSuccessPopup(false)} />
+      )}
+      {showLoginPopup && (
+        <LoginPopup
+          isOpen={showLoginPopup}
+          onClose={() => setShowLoginPopup(false)}
+        />
+      )}
     </>
   );
 };

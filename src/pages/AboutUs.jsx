@@ -6,14 +6,14 @@ import HeroOrnamen2 from '../assets/images/hero-ornamen-2.svg';
 const Aboutus = () => {
   return (
     <>
-      <section className="pt-[65px] mb-[150px]">
+      <section className="pt-[65px] mb-[150px] max-lg:mb-[65px]">
         <div className="container relative">
           <div className="flex flex-col gap-[50px] relative z-[1]">
-            <h1 className="font-Parkinsans text-[108px] font-[400] text-(--blue) leading-[130%] max-w-[630px]">
+            <h1 className="font-Parkinsans text-[108px] font-[400] text-(--blue) leading-[130%] max-w-[630px] max-xl:text-8xl max-xl:max-w-[100%] max-md:text-[42px]">
               Cerita Kita Dimulai Dari Sini
             </h1>
             <div className="flex justify-end">
-              <p className="text-[24px] leading-[180%] font-[300] text-[#5E615E] max-w-[735px]">
+              <p className="text-[24px] leading-[180%] font-[300] text-[#5E615E] max-w-[735px] max-xl:max-w-[100%] max-lg:text-[20px] max-md:text-[18px]">
                 Berawal dari hal-hal di sekitar kita—seperti teman-teman yang
                 memiliki potensi dan keahlian di bidangnya. Tapi sering kali
                 mereka belum menemukan klien yang cocok atau belum tahu harus
@@ -23,7 +23,7 @@ const Aboutus = () => {
               </p>
             </div>
             <div className="flex">
-              <p className="text-[24px] leading-[180%] font-[300] text-[#5E615E] max-w-[732px]">
+              <p className="text-[24px] leading-[180%] font-[300] text-[#5E615E] max-w-[732px] max-xl:max-w-[100%] max-lg:text-[20px] max-md:text-[18px]">
                 Bantu Proojek hadir sebagai penghubung antara para desainer atau
                 kreator dengan klien—bisa dari artisan, UMKM, hingga perusahaan
                 besar. <br />
@@ -33,7 +33,7 @@ const Aboutus = () => {
               </p>
             </div>
           </div>
-          <div className="absolute top-0 left-0 right-0 bottom-0 z-0">
+          <div className="absolute top-0 left-0 right-0 bottom-0 z-0 max-xl:hidden">
             <div className="w-[197px] h-[216px] bg-[#6F96D1] absolute top-[130px] right-[199px]">
               <div className="w-[174px] h-[174px] bg-[#DCF343] absolute top-[-99px] right-[-99px]"></div>
               <img
@@ -46,21 +46,21 @@ const Aboutus = () => {
           </div>
         </div>
       </section>
-      <section className="pb-[120px]">
+      <section className="pb-[120px]  max-lg:pb-[60px]">
         <div className="container flex flex-col gap-5">
-          <h1 className="font-Parkinsans text-[56px] font-[400] text-(--blue) leading-[150%]">
+          <h1 className="font-Parkinsans text-[56px] font-[400] text-(--blue) leading-[150%] max-md:text-[42px]">
             Tim Bantu Proojek
           </h1>
           <div className="flex flex-col justify-between items-center gap-5 flex-wrap">
-            <div className="flex justify-between w-full">
-              <div className="flex flex-col gap-8 max-w-[400px] w-full">
+            <div className="flex justify-between w-full max-xl:gap-5 max-md:flex-col">
+              <div className="flex flex-col gap-8 max-w-[400px] w-full max-md:gap-4">
                 <img
                   src={ImageCard1}
                   alt="Event Documentation 1"
                   className="w-full object-cover h-full "
                 />
                 <div className="flex flex-col gap-0.5 items-center">
-                  <h3 className=" font-Parkinsans font-[500] text-(--blue) text-[32px] leading-[150%]">
+                  <h3 className=" font-Parkinsans font-[500] text-(--blue) text-[32px] leading-[150%] max-md:text-2xl">
                     Ifa Bilqiis
                   </h3>
                   <span className="text-[18px] leading-[180%] font-[300] text-[#7F909F]">
@@ -68,7 +68,7 @@ const Aboutus = () => {
                   </span>
                 </div>
               </div>
-              <div className="flex flex-col gap-8 max-w-[400px] w-full">
+              <div className="flex flex-col gap-8 max-w-[400px] w-full max-md:gap-4">
                 <div>
                   <img
                     src={ImageCard2}
@@ -77,7 +77,7 @@ const Aboutus = () => {
                   />
                 </div>
                 <div className="flex flex-col gap-0.5 items-center">
-                  <h3 className=" font-Parkinsans font-[500] text-(--blue) text-[32px] leading-[150%]">
+                  <h3 className=" font-Parkinsans font-[500] text-(--blue) text-[32px] leading-[150%] max-md:text-2xl">
                     Fauziah Kesya
                   </h3>
                   <span className="text-[18px] leading-[180%] font-[300] text-[#7F909F]">
@@ -86,7 +86,7 @@ const Aboutus = () => {
                 </div>
               </div>
             </div>
-            <div className="flex flex-col gap-8 max-w-[400px] w-full">
+            <div className="flex flex-col gap-8 max-w-[400px] w-full max-md:gap-4">
               <div>
                 <img
                   src={ImageCard3}
@@ -95,7 +95,7 @@ const Aboutus = () => {
                 />
               </div>
               <div className="flex flex-col gap-0.5 items-center">
-                <h3 className=" font-Parkinsans font-[500] text-(--blue) text-[32px] leading-[150%]">
+                <h3 className=" font-Parkinsans font-[500] text-(--blue) text-[32px] leading-[150%] max-md:text-2xl">
                   Ariqah
                 </h3>
                 <span className="text-[18px] leading-[180%] font-[300] text-[#7F909F]">

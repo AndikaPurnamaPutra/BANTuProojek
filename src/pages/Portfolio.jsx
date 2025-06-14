@@ -1,11 +1,16 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import PortfolioTabs from '../components/Portfolio/PortfolioTabs';
 import PortfolioItem from '../components/Portfolio/PortfolioItem';
 import api from '../services/api';
 
 const Portfolio = () => {
-  // Default 'all' lowercase supaya konsisten dengan kategori di tabs
+  const [searchParams] = useSearchParams();
   const [activeCategory, setActiveCategory] = useState('all');
+  useEffect(() => {
+    const category = searchParams.get('category') || 'all';
+    setActiveCategory(category.toLowerCase());
+  }, [searchParams]);
   const [searchTerm, setSearchTerm] = useState('');
   const [visibleCount, setVisibleCount] = useState(20);
   const [isLoading, setIsLoading] = useState(false);
@@ -112,36 +117,36 @@ const Portfolio = () => {
 
         {/* Grid Portofolio */}
         <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-          {visibleItems.length > 0
-            ? visibleItems.map((item) => (
-                <PortfolioItem
-                  key={item._id}
-                  id={item._id}
-                  image={
-                    item.media && item.media.length > 0
-                      ? item.media[0]
-                      : 'defaultPortfolioImg.jpg'
-                  }
-                  title={item.title}
-                  author={
-                    item.creatorID?.firstName ||
-                    item.creatorID?.username ||
-                    'Unknown'
-                  }
-                  profile={
-                    item.creatorID?.profilePic
-                      ? item.creatorID.profilePic
-                      : 'defaultProfilePic.jpg'
-                  }
-                  likes={item.likesCount || 0}
-                  initialLiked={item.initialLiked || false}
-                />
-              ))
-            : activeCategory !== 'all' && (
-                <p className="text-center text-gray-500 col-span-full">
-                  Tidak ada portofolio yang cocok.
-                </p>
-              )}
+          {!isLoading && visibleItems.length === 0 ? (
+            <p className="text-center text-gray-500 col-span-full">
+              Tidak ada portofolio yang cocok.
+            </p>
+          ) : (
+            visibleItems.map((item) => (
+              <PortfolioItem
+                key={item._id}
+                id={item._id}
+                image={
+                  item.media && item.media.length > 0
+                    ? item.media[0]
+                    : 'defaultPortfolioImg.jpg'
+                }
+                title={item.title}
+                author={
+                  item.creatorID?.firstName ||
+                  item.creatorID?.username ||
+                  'Unknown'
+                }
+                profile={
+                  item.creatorID?.profilePic
+                    ? item.creatorID.profilePic
+                    : 'defaultProfilePic.jpg'
+                }
+                likes={item.likesCount || 0}
+                initialLiked={item.initialLiked || false}
+              />
+            ))
+          )}
         </div>
 
         {/* Loading indicator */}

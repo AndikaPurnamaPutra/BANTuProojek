@@ -13,6 +13,7 @@ import ArticleDetail from './components/Article/ArticleDetail';
 import Job from './pages/Job';
 import JobDetail from './components/Job/JobDetail';
 import Event from './pages/Event';
+import EventDetail from './components/Event/EventDetail';
 import Aboutus from './pages/AboutUs';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -62,6 +63,7 @@ function App() {
         <Route path="/job" element={<Job />} />
         <Route path="/job-detail/:id" element={<JobDetail />} />
         <Route path="/event" element={<Event />} />
+        <Route path="/event/:id" element={<EventDetail />} />
         <Route path="/about-us" element={<Aboutus />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

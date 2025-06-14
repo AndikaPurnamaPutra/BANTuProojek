@@ -54,21 +54,21 @@ const JobDetail = () => {
             >
               <img src={IcArrow} alt="Arrow" className="w-8 h-8" />
             </Link>
-            <h1 className="text-[56px] font-semibold text-[var(--blue)] leading-[150%]">
+            <h1 className="text-[56px] font-semibold text-[var(--blue)] leading-[150%] max-xl:text-[42px]">
               {job.position}
             </h1>
           </div>
         </div>
 
-        <div className="flex gap-[30px]">
-          <div className="w-[50%]">
+        <div className="flex gap-[30px] max-xl:flex-col">
+          <div className="w-[50%] max-xl:w-full">
             <img
               src={thumbnailUrl}
               alt={job.position}
               className="rounded-lg w-full object-cover bg-gray-200"
             />
           </div>
-          <div className="w-[50%] flex flex-col gap-5">
+          <div className="w-[50%] flex flex-col gap-5 max-xl:w-full">
             <h3 className="text-[32px] leading-[130%]">{job.company}</h3>
 
             {/* Deskripsi dengan Tailwind Typography */}

@@ -11,7 +11,7 @@ const ArticleItem = ({ id, image, date, title }) => {
         />
         <div className="flex flex-col gap-1">
           <span className="font-Lexend font-[300] text-gray-500">{date}</span>
-          <h2 className="text-[24px] font-bold leading-[150%] text-black">{title}</h2>
+          <h2 className="text-[24px] font-bold leading-[150%] text-black max-xl:text-[20px]">{title}</h2>
         </div>
       </div>
     </Link>

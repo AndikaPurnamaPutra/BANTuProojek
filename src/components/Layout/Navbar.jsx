@@ -163,7 +163,7 @@ const Navbar = () => {
         </div>
 
         <div
-          className={`absolute top-full left-0 right-0 bg-white transition-all duration-500 ease-in-out overflow-hidden lg:hidden ${
+          className={`absolute top-full left-0 right-0 bg-[#FFF9EF] transition-all duration-500 ease-in-out overflow-hidden lg:hidden ${
             isOpen ? 'h-[calc(100dvh-60px)] p-6 ' : 'h-0'
           }`}
         >

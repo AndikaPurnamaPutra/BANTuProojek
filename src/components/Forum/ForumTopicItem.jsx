@@ -41,15 +41,15 @@ const ForumTopicItem = () => {
       {forums.map((forum) => (
         <div
           key={forum._id}
-          className="pb-[50px] border-b-[1px] border-[#D4DADF]"
+          className="pb-[50px] border-b-[1px] border-[#D4DADF] max-md:pb-6"
         >
           <Link to={`/forum-topic-detail/${forum._id}`} className="block">
-            <h2 className="text-[32px] font-semibold text-gray-800 mb-8">
+            <h2 className="text-[32px] font-semibold text-gray-800 mb-8 leading-[130%] max-md:text-[24px] max-md:mb-6">
               {forum.title}
             </h2>
           </Link>
-          <div className="flex flex-col gap-6 items-start">
-            <div className="inline-flex items-center gap-5 mb-6">
+          <div className="flex flex-col gap-6 items-start max-md:gap-4">
+            <div className="inline-flex items-center gap-5 mb-6 max-md:mb-4 max-md:gap-4">
               <Link to={`/profile/${forum.userID?._id}`} className="flex">
                 <img
                   src={
@@ -58,7 +58,7 @@ const ForumTopicItem = () => {
                       : '/defaultProfilePic.jpg'
                   }
                   alt={forum.userID?.firstName || forum.userID?.username || 'User'}
-                  className="w-16 h-16 rounded-full object-cover"
+                  className="w-16 h-16 rounded-full object-cover max-md:w-12 max-md:h-12"
                 />
               </Link>
               <div className="flex flex-col gap-0.5 shrink-0">

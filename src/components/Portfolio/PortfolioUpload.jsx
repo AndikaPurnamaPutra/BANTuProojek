@@ -215,7 +215,7 @@ const PortfolioUpload = () => {
   };
 
   return (
-    <section className="w-full bg-[#FFF9EF] flex items-center px-12 py-10">
+    <section className="w-full bg-[#FFF9EF] flex items-center px-12 py-10 max-md:p-6">
       <div className="flex flex-col gap-8 w-full">
         <div className="flex flex-col gap-5 border-b-[1px] border-[#D4DADF] pb-[30px]">
           <h2 className="font-Parkinsans text-[52px] font-medium leading-[150%] text-(--blue)">
@@ -320,7 +320,7 @@ const PortfolioUpload = () => {
             <label className="text-lg font-light text-[#7F909F]">
               File Tambahan
             </label>
-            <div className="flex justify-between gap-5">
+            <div className="flex justify-between gap-5 max-lg:flex-col">
               {additionalFiles.map((_, index) => (
                 <div
                   key={index}

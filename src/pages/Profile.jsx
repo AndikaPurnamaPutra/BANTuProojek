@@ -63,13 +63,13 @@ const Profile = () => {
     <section className="max-w-[1440px] mx-auto py-30 bg-[#FFF9EF] min-h-screen">
       <div className="container">
         {/* Profile Section */}
-        <div className="flex justify-center items-center gap-8 relative">
+        <div className="flex justify-center items-center gap-8 relative max-md:flex-col max-md:items-start max-md:gap-4">
           <img
             src={user.profilePic ? user.profilePic : 'defaultProfilePic.jpg'}
             alt="Profile"
             className="w-32 h-32 rounded-full object-cover border-4 border-white shadow-md"
           />
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 max-md:w-full">
             <div className="flex flex-col gap-0.5">
               <h2 className="text-lg font-medium text-black leading-[180%]">
                 {user.firstName || user.username || 'Unknown'}
@@ -78,7 +78,7 @@ const Profile = () => {
                 {user.role || 'Role tidak tersedia'}
               </p>
             </div>
-            <div className="flex gap-4">
+            <div className="flex gap-4 max-md:flex-col max-md:gap-2 max-md:w-full">
               {/* Tampilkan tombol hanya jika ini profil sendiri */}
               {isOwnProfile && (
                 <>

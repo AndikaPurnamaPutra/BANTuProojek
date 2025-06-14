@@ -76,7 +76,7 @@ const ArticleDetail = () => {
             >
               <img src={IcArrow} alt="Arrow" className="w-8 h-8" />
             </Link>
-            <h1 className="text-[56px] font-semibold text-gray-800 leading-[150%]">
+            <h1 className="text-[56px] font-semibold text-gray-800 leading-[150%] max-lg:text-[32px]">
               {article.title}
             </h1>
           </div>

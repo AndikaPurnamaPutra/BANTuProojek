@@ -131,7 +131,7 @@ const PortfolioDetail = () => {
                   : 'defaultProfilePic.jpg'
               }
               alt={item.creatorID.firstName || item.creatorID.username}
-              className="w-12 h-12 rounded-full object-cover"
+              className="w-12 h-12 rounded-full object-cover max-md:w-10 max-md:h-10"
             />
             <span className="text-sm font-medium">
               {item.creatorID.firstName || item.creatorID.username}
@@ -194,7 +194,7 @@ const PortfolioDetail = () => {
                   : 'defaultProfilePic.jpg'
               }
               alt={item.creatorID.firstName || item.creatorID.username}
-              className="w-[124px] h-[124px] rounded-full object-cover"
+              className="w-[124px] h-[124px] rounded-full object-cover max-md:w-18 max-md:h-18"
             />
             <span className="text-[24px]">
               {item.creatorID?.firstName || item.creatorID.username}

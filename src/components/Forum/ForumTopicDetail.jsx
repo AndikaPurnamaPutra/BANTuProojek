@@ -74,35 +74,40 @@ const ForumTopicDetail = () => {
     <section className="pt-[65px] pb-[100px]">
       <div className="container">
         {!topicData ? (
-          <p className="text-center py-20 text-gray-500 bg-white p-[50px] rounded-[20px]">Loading...</p>
+          <p className="text-center py-20 text-gray-500 bg-white p-[50px] rounded-[20px]">
+            Loading...
+          </p>
         ) : (
-          <div className="bg-white p-[50px] rounded-[20px]">
+          <div className="bg-white p-[50px] rounded-[20px] max-md:p-6">
             <header className="flex items-center mb-8">
-              <a href="/forum" className="text-blue-500 hover:underline mr-4">
-                <img src={IcArrow} alt="Arrow" className="w-8 h-8" />
+              <a href="/forum" className="text-blue-500 hover:underline mr-4 inline-flex">
+                <img src={IcArrow} alt="Arrow" className="w-8 h-8 shrink-0" />
               </a>
-              <h1 className="text-[32px] font-semibold text-gray-800">
+              <h1 className="text-[32px] font-semibold text-gray-800 leading-[130%] max-md:text-[24px]">
                 {topicData.title}
               </h1>
             </header>
 
-            <div className="pb-[70px] border-b-[1px] border-[#D4DADF] mb-[70px]">
+            <div className="pb-[70px] border-b-[1px] border-[#D4DADF] mb-[70px] max-lg:pb-10 max-lg:mb-10">
               <div className="flex items-start gap-5 mb-4">
                 <img
                   src={getProfilePicUrl(topicData.userID.profilePic)}
                   alt={topicData.userID.firstName || topicData.userID.username}
-                  className="w-16 h-16 rounded-full object-cover"
+                  className="w-16 h-16 rounded-full object-cover max-md:w-12 max-md:h-12"
                 />
                 <div>
                   <p className="font-semibold text-gray-800">
                     {topicData.userID.firstName || topicData.userID.username}
                   </p>
                   <span className="text-gray-500 text-sm">
-                    {new Date(topicData.creationDate).toLocaleDateString('id-ID', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric',
-                    })}
+                    {new Date(topicData.creationDate).toLocaleDateString(
+                      'id-ID',
+                      {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric',
+                      }
+                    )}
                   </span>
                 </div>
               </div>
@@ -137,7 +142,9 @@ const ForumTopicDetail = () => {
                       </span>
                     </div>
                   </div>
-                  <p className="text-gray-600 whitespace-pre-line">{c.content}</p>
+                  <p className="text-gray-600 whitespace-pre-line">
+                    {c.content}
+                  </p>
                 </div>
               ))}
             </div>

@@ -40,13 +40,13 @@ const Job = () => {
   return (
     <section className="job pt-[65px] pb-[100px] min-h-screen">
       <div className="container">
-        <div className="flex flex-col gap-12">
+        <div className="flex flex-col gap-12 max-md:gap-8">
           <div className="relative inline-flex w-fit">
-            <h1 className="text-[108px] leading-[130%] text-[var(--blue)] font-medium">
+            <h1 className="text-[108px] leading-[130%] text-[var(--blue)] font-medium max-xl:text-7xl max-md:text-5xl">
               Info Loker
             </h1>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
             {jobs.map((job) => (
               <JobItem key={job._id} job={job} />
             ))}

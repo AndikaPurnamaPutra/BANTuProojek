@@ -16,7 +16,7 @@ const Button = ({
     primary: 'rounded-full bg-(--blue) px-8 py-3 text-white hover:bg-blue-700',
     secondary: 'text-gray-700 bg-gray-200 hover:bg-gray-300 px-6 py-3',
     outline:
-      'border border-(--blue) text-(--blue) hover:bg-(--blue) hover:text-white duration-300 gap-2.5 px-8 py-3 rounded-full',
+      'border border-(--blue) text-(--blue) hover:bg-(--blue) hover:text-white duration-300 gap-2.5 px-8 py-3 rounded-full max-md:w-full',
     link: 'px-0! py-0! rounded-none text-[var(--blue)]',
     icon: 'p-[10px]! bg-(--blue) rounded-[10px]! text-white',
   };

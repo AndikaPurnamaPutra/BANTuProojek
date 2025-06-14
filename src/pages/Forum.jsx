@@ -27,9 +27,9 @@ const Forum = () => {
   }, []);
 
   return (
-    <div className="container mx-auto py-25 min-h-screen">
-      <header className="flex justify-between items-center mb-8">
-        <h1 className=" text-[62px] font-semibold text-(--blue)">Forum</h1>
+    <div className="container mx-auto py-25 min-h-screen max-md:py-20">
+      <header className="flex justify-between items-center mb-8 max-md:flex-col max-md:items-start max-md:gap-4">
+        <h1 className=" text-[62px] font-semibold text-(--blue) max-md:text-[42px]">Forum</h1>
         <Button variant="outline" onClick={handlePostTopicClick}>
           Post Topik Diskusi
         </Button>
@@ -37,7 +37,7 @@ const Forum = () => {
 
       {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
-      <div className="flex flex-col gap-[50px] py-[50px] px-[34px] bg-white rounded-[20px]">
+      <div className="flex flex-col gap-[50px] py-[50px] px-[34px] bg-white rounded-[20px] max-md:p-6">
         {forumTopics.length === 0 ? (
           <p className="text-center text-gray-500 col-span-full">Tidak ada topik diskusi.</p>
         ) : (

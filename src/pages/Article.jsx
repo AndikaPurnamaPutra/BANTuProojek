@@ -30,16 +30,16 @@ const Article = () => {
     <>
       <section className='min-h-screen'>
         <div className="container">
-          <div className="flex flex-col gap-[50px] pt-[65px] pb-[100px]">
+          <div className="flex flex-col gap-[50px] pt-[65px] pb-[100px] max-md:pt-[40px] max-md:pb-[60px] max-md:gap-[30px]">
             <div className="relative inline-flex w-fit">
-              <h1 className="text-[108px] leading-[130%] text-[var(--blue)] font-medium">
+              <h1 className="text-[108px] leading-[130%] text-[var(--blue)] font-medium max-xl:text-[72px]">
                 Artikel
               </h1>
               {/* Jika mau pasang dekorasi bisa di sini */}
               {/* <img src={ArticleDecoration} alt="Decoration" /> */}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
               {articles.map((article) => (
                 <ArticleItem
                   key={article._id}

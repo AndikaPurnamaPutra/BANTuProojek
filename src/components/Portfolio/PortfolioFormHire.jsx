@@ -139,10 +139,10 @@ const PortfolioFormHire = () => {
 
   return (
     <>
-      <section className="pt-[65px] pb-[120px]">
+      <section className="pt-[65px] pb-[120px] max-md:py-16">
         <div className="container">
-          <div className="flex flex-col gap-12 bg-white p-12.5 rounded-[20px]">
-            <div className="flex items-center gap-5">
+          <div className="flex flex-col gap-12 bg-white p-12.5 rounded-[20px] max-md:p-5">
+            <div className="flex items-center gap-5 max-md:flex-col max-md:items-start max-md:gap-0">
               <h1 className="text-[36px] leading-[150%] text-black">Buat Proyek</h1>
               <span className="text-(--blue) text-lg">{author}</span>
             </div>
@@ -218,7 +218,7 @@ const PortfolioFormHire = () => {
                 <label htmlFor="estimasiAnggaran" className="text-sm font-medium mb-3">
                   Estimasi Anggaran <span className="text-red-500">*</span>
                 </label>
-                <div className="flex justify-between items-center gap-7">
+                <div className="flex justify-between items-center gap-7 max-md:flex-col max-md:gap-4">
                   {/* Estimasi Anggaran Minimal */}
                   <div className="relative flex items-center w-full">
                     <span className="absolute left-2 text-sm text-gray-600">Rp</span>

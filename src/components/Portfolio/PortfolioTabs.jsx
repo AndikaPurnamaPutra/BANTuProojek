@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 const categories = [
@@ -26,6 +27,7 @@ const capitalizeWords = (str) =>
 
 const PortfolioTabs = ({ active, onChange }) => {
   const scrollRef = useRef(null);
+  const navigate = useNavigate();
   const [showLeft, setShowLeft] = useState(false);
   const [showRight, setShowRight] = useState(true);
 
@@ -53,6 +55,11 @@ const PortfolioTabs = ({ active, onChange }) => {
     return () => el?.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const handleCategoryClick = (cat) => {
+    onChange(cat);
+    navigate(`/portfolio?category=${cat}`);
+  };
+
   return (
     <div className="relative w-full max-w-[968px]">
       {showLeft && (
@@ -71,7 +78,7 @@ const PortfolioTabs = ({ active, onChange }) => {
         {categories.map((cat) => (
           <button
             key={cat}
-            onClick={() => onChange(cat)}
+            onClick={() => handleCategoryClick(cat)}
             className={`text-sm cursor-pointer capitalize whitespace-nowrap px-4 py-2 rounded-full transition-all ${
               active === cat
                 ? 'bg-[var(--blue)] text-white'
