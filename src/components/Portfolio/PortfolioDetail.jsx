@@ -1,5 +1,5 @@
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate, useLocation, Link } from 'react-router-dom';
-import { useEffect, useState } from 'react';
 import api from '../../services/api';
 import Button from '../Ui/Button';
 
@@ -13,37 +13,51 @@ const PortfolioDetail = () => {
   const [showModal, setShowModal] = useState(false);
   const [mainImage, setMainImage] = useState(null);
 
-  // Fetch portfolio detail from backend
-  useEffect(() => {
+  const getMediaUrl = (path) => {
+    if (!path) return '/defaultPortfolioImg.jpg';
+    if (path.startsWith('http')) return path;
+    return `${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/${path}`;
+  };
+
+  const fetchPortfolio = useCallback(async () => {
     setLoading(true);
-
-    const fetchPortfolio = async () => {
-      try {
-        const token = localStorage.getItem('token');
-        const res = await api.get(`/portfolios/${id}`, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {},
-        });
-        setItem(res.data);
-        setMainImage(
-          res.data.media && res.data.media.length > 0
-            ? res.data.media[0]
-            : null
-        );
-        setLoading(false);
-        setTimeout(() => setShowModal(true), 50);
-      } catch (error) {
-        console.error('Failed to load portfolio detail:', error);
-        navigate('/portfolio'); // Jika tidak ditemukan, redirect ke list
+    try {
+      const token = localStorage.getItem('token');
+      const res = await api.get(`/portfolios/${id}`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      setItem(res.data);
+      setMainImage(
+        res.data.media && res.data.media.length > 0
+          ? getMediaUrl(res.data.media[0])
+          : null
+      );
+      setLoading(false);
+      setTimeout(() => setShowModal(true), 50);
+    } catch (error) {
+      console.error('Failed to load portfolio detail:', error);
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('userId');
+        navigate('/login');
+      } else {
+        navigate('/portfolio');
       }
-    };
-
-    fetchPortfolio();
+    }
   }, [id, navigate]);
 
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    return () => (document.body.style.overflow = 'auto');
-  }, []);
+    fetchPortfolio();
+  }, [fetchPortfolio]);
+
+  useEffect(() => {
+    document.body.style.overflow = showModal ? 'hidden' : 'auto';
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [showModal]);
 
   const handleClose = () => {
     setShowModal(false);
@@ -60,8 +74,13 @@ const PortfolioDetail = () => {
     if (item && item.creatorID) {
       console.log('Portfolio detail data:', item);
       navigate('/create-project', {
-        state: { author: item.creatorID.firstName || item.creatorID.username },
+        state: {
+          author: item.creatorID.firstName || item.creatorID.username,
+          designerID: item.creatorID._id, // PERBAIKAN DI SINI: Mengubah creatorId menjadi designerID
+        },
       });
+    } else {
+      alert('Informasi pembuat tidak tersedia.');
     }
   };
 
@@ -76,9 +95,10 @@ const PortfolioDetail = () => {
     );
   }
 
-  // Media lain selain media utama
   const otherMedia =
-    item.media && item.media.length > 1 ? item.media.slice(1) : [];
+    item.media && item.media.length > 1
+      ? item.media.slice(1).map(getMediaUrl)
+      : [];
 
   return (
     <div
@@ -121,20 +141,18 @@ const PortfolioDetail = () => {
 
         <div className="flex justify-between items-center bg-[#FFF9EF] max-md:flex-col max-md:gap-4 max-md:items-start">
           <Link
-            to={`/profile/${item.creatorID._id}`}
+            to={`/profile/${item.creatorID?._id}`}
             className="flex items-center gap-3"
           >
             <img
-              src={
-                item.creatorID.profilePic
-                  ? item.creatorID.profilePic
-                  : 'defaultProfilePic.jpg'
+              src={getMediaUrl(item.creatorID?.profilePic)}
+              alt={
+                item.creatorID?.firstName || item.creatorID?.username || 'User'
               }
-              alt={item.creatorID.firstName || item.creatorID.username}
               className="w-12 h-12 rounded-full object-cover max-md:w-10 max-md:h-10"
             />
             <span className="text-sm font-medium">
-              {item.creatorID.firstName || item.creatorID.username}
+              {item.creatorID?.firstName || item.creatorID?.username || 'User'}
             </span>
           </Link>
           <Button variant="primary" onClick={handleCreateProject}>
@@ -162,7 +180,7 @@ const PortfolioDetail = () => {
               <h2 className="text-[42px] leading-[150%] text-[var(--blue)] font-bold max-md:text-3xl max-md:leading-[130%]">
                 More Preview
               </h2>
-              <Link to={`/profile/${item.creatorID._id}`}>
+              <Link to={`/profile/${item.creatorID?._id}`}>
                 <Button variant="link">View Profile</Button>
               </Link>
             </div>
@@ -184,26 +202,20 @@ const PortfolioDetail = () => {
             Hire Me!
           </h2>
           <Link
-            to={`/profile/${item.creatorID._id}`}
+            to={`/profile/${item.creatorID?._id}`}
             className="flex flex-col items-center gap-3"
           >
             <img
-              src={
-                item.creatorID?.profilePic
-                  ? item.creatorID.profilePic
-                  : 'defaultProfilePic.jpg'
+              src={getMediaUrl(item.creatorID?.profilePic)}
+              alt={
+                item.creatorID?.firstName || item.creatorID?.username || 'User'
               }
-              alt={item.creatorID.firstName || item.creatorID.username}
               className="w-[124px] h-[124px] rounded-full object-cover max-md:w-18 max-md:h-18"
             />
             <span className="text-[24px]">
-              {item.creatorID?.firstName || item.creatorID.username}
+              {item.creatorID?.firstName || item.creatorID?.username || 'User'}
             </span>
           </Link>
-          <p className="text-sm text-center max-w-md">
-            Support by cozy things! Ready to collaborate for your next creative
-            project 🚀
-          </p>
           <Button variant="primary" onClick={handleCreateProject}>
             Buat Projek
           </Button>

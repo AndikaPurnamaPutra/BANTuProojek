@@ -1,53 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { EyeIcon, EyeOffIcon } from 'lucide-react';
-import { login, getProfile } from '../services/userService'; // import fungsi login API
+import { login } from '../services/userService'; // Mengimpor fungsi login dari userService
 import LoginBackground from '../assets/images/login_bg.webp';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
+  const [emailOrUsername, setEmailOrUsername] = useState(''); // Menggunakan state untuk email atau username
   const [password, setPassword] = useState('');
   const [isButtonEnabled, setIsButtonEnabled] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
-    setIsButtonEnabled(email.trim() !== '' && password.trim() !== '');
-  }, [email, password]);
+    setIsButtonEnabled(emailOrUsername.trim() !== '' && password.trim() !== '');
+  }, [emailOrUsername, password]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
     try {
-      const res = await login(email, password);
+      const res = await login(emailOrUsername, password); // Memanggil fungsi login dengan emailOrUsername
+      const { token, user: userData } = res.data; // Destrukturisasi token dan user dari respons backend
 
-      // Simpan token ke localStorage
-      localStorage.setItem('token', res.data.token);
-
-      // Simpan data user ke localStorage
-      let userData = res.data.user;
-
-      if (!userData) {
-        // Jika user tidak ada di response login, ambil dari endpoint profile
-        const profileRes = await getProfile();
-        userData = profileRes.data;
-      }
-
-      // Simpan user lengkap ke localStorage
+      localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify(userData));
 
-      // Simpan role dan id secara terpisah untuk akses mudah
-      if (userData.role)
+      if (userData.role) {
         localStorage.setItem('userRole', userData.role.toLowerCase());
-      if (userData._id) localStorage.setItem('userId', userData._id);
+      }
+      if (userData._id) {
+        localStorage.setItem('userId', userData._id);
+      }
 
-      // Dispatch event supaya komponen lain tahu login sudah berhasil
+      // Dispatch event agar komponen lain tahu login sudah berhasil
       window.dispatchEvent(new Event('storageUpdated'));
 
-      // Redirect ke homepage
-      window.location.href = '/';
+      // Redirect berdasarkan peran pengguna
+      if (userData.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else {
+        navigate('/'); // Default ke homepage/dashboard user biasa
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Email atau Password salah');
+      console.error("Login error:", err);
+      setError(err.response?.data?.message || 'Email/Username atau Kata Sandi salah.');
     }
   };
 
@@ -65,7 +63,7 @@ const Login = () => {
           <div className="w-full bg-white flex items-center px-[50px]">
             <div className="w-full flex flex-col gap-12.5">
               <div className="flex flex-col gap-5 border-b-[1px] border-[#D4DADF] pb-[30px]">
-                <h2 className="font-Parkinsans text-[32px] text-(--blue) leading-[150%] font-medium">
+                <h2 className="font-Parkinsans text-[32px] text-[var(--blue)] leading-[150%] font-medium">
                   Welcome Back!
                 </h2>
                 <p className="text-[18px] font-[300] leading-[180%]">
@@ -83,19 +81,19 @@ const Login = () => {
                 <form onSubmit={handleSubmit}>
                   <div className="mb-12.5 flex flex-col gap-3 max-lg:mb-8">
                     <label
-                      htmlFor="email"
+                      htmlFor="emailOrUsername"
                       className="text-lg font-light leading-[180%] text-[#7F909F]"
                     >
-                      Email
+                      Email atau Nama Pengguna
                       <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
-                      id="email"
+                      id="emailOrUsername"
                       className="block w-full px-4 py-4 border border-[#D4DADF] rounded-md text-lg font-[300] focus:outline-none focus:ring-2 focus:ring-blue-600 min-h-[64px] placeholder-text-[#AAB5BF] focus:text-black"
-                      placeholder="Tuliskan email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Tuliskan email atau nama pengguna"
+                      value={emailOrUsername}
+                      onChange={(e) => setEmailOrUsername(e.target.value)}
                       required
                     />
                   </div>
@@ -151,6 +149,14 @@ const Login = () => {
                     >
                       Daftar
                     </a>
+                    {/* {' '}
+                    atau{' '}
+                    <a
+                      href="/admin/register"
+                      className="text-blue-600 font-medium hover:underline"
+                    >
+                      Daftar sebagai Admin
+                    </a> */}
                   </p>
                 </div>
               </div>

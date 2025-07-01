@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'; // Tambahkan useCallback
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 import { useEditor, EditorContent } from '@tiptap/react';
@@ -164,7 +164,13 @@ const MenuBar = ({ editor }) => {
       <button
         type="button"
         onClick={() =>
-          editor.chain().focus().clearNodes().unsetAllMarks().setParagraph().run()
+          editor
+            .chain()
+            .focus()
+            .clearNodes()
+            .unsetAllMarks()
+            .setParagraph()
+            .run()
         }
         className={`${buttonBaseClass} text-gray-600`}
         aria-label="Clear Formatting"
@@ -192,12 +198,14 @@ const ManageEvent = () => {
     location: '',
     date: '',
     time: '',
-    contact: '', // contact number field
+    contact: '',
     thumbnail: null,
     multimedia: [],
+    existingThumbnail: '',
+    existingMultimedia: [],
+    _id: null,
   });
 
-  // Editor for description
   const editor = useEditor({
     extensions: [StarterKit, Underline, Link],
     content: formData.description,
@@ -208,43 +216,77 @@ const ManageEvent = () => {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-
   const itemsPerPage = 10;
 
-  // Fetch events
-  const fetchEvents = async () => {
+  // Penanganan otorisasi di frontend: hanya admin yang bisa akses halaman ini
+  useEffect(() => {
+    const userRole = localStorage.getItem('userRole');
+    if (userRole !== 'admin') {
+      alert('Anda tidak memiliki izin untuk mengakses halaman ini.');
+      navigate('/');
+    }
+  }, [navigate]);
+
+  // Inject CSS untuk styling Tiptap editor
+  useEffect(() => {
+    const styleTag = document.createElement('style');
+    styleTag.id = 'custom-prose-styles';
+    styleTag.innerHTML = `
+      .prose p { margin-bottom: 1rem; }
+      .prose h1, .prose h2, .prose h3 {
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+        font-weight: medium;
+        font-family: "Lexend", serif;
+      }
+      .prose ul, .prose ol { margin-bottom: 1rem; padding-left: 1.25rem; }
+      .prose blockquote {
+        margin: 1rem 0;
+        padding-left: 1rem;
+        border-left: 4px solid #3b82f6;
+        color: #3b82f6;
+        font-style: italic;
+      }
+    `;
+    document.head.appendChild(styleTag);
+
+    return () => {
+      const existingTag = document.getElementById('custom-prose-styles');
+      if (existingTag) existingTag.remove();
+    };
+  }, []);
+
+  const fetchEvents = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get('/events');
       setEvents(res.data);
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to fetch events');
+      console.error('Error fetching events:', err);
+      alert(err.response?.data?.message || 'Gagal mengambil data event');
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('userId');
+        navigate('/login');
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
 
   useEffect(() => {
     fetchEvents();
-  }, []);
+  }, [fetchEvents]);
 
-  // Filter and paginate events
-  const filteredEvents = events.filter((e) =>
-    (e.title ?? '').toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // Sinkronisasi konten editor setiap kali formData.description berubah
+  useEffect(() => {
+    if (editor && formData.description !== editor.getHTML()) {
+      editor.commands.setContent(formData.description);
+    }
+  }, [formData.description, editor]);
 
-  const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
-  const displayedEvents = filteredEvents.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const goToPage = (page) => {
-    if (page < 1 || page > totalPages) return;
-    setCurrentPage(page);
-  };
-
-  // Modal controls
   const openAddModal = () => {
     setFormData({
       title: '',
@@ -256,6 +298,9 @@ const ManageEvent = () => {
       contact: '',
       thumbnail: null,
       multimedia: [],
+      existingThumbnail: '',
+      existingMultimedia: [],
+      _id: null,
     });
     setEditingEvent(null);
     setIsModalOpen(true);
@@ -285,9 +330,23 @@ const ManageEvent = () => {
   const closeModal = () => {
     setIsModalOpen(false);
     setEditingEvent(null);
+    setFormData({
+      title: '',
+      subtitle: '',
+      description: '',
+      location: '',
+      date: '',
+      time: '',
+      contact: '',
+      thumbnail: null,
+      multimedia: [],
+      existingThumbnail: '',
+      existingMultimedia: [],
+      _id: null,
+    });
+    editor?.commands.setContent('');
   };
 
-  // Form handlers
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -304,60 +363,88 @@ const ManageEvent = () => {
     }));
   };
 
-  // Submit event form
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
 
-    try {
-      const data = new FormData();
-      data.append('title', formData.title);
-      data.append('subtitle', formData.subtitle);
-      data.append('description', formData.description);
-      data.append('location', formData.location);
-      data.append('date', formData.date);
-      data.append('time', formData.time);
-      data.append('contact', formData.contact);
-
-      if (formData.thumbnail) data.append('thumbnail', formData.thumbnail);
-
-      if (formData.multimedia && formData.multimedia.length > 0) {
-        formData.multimedia.forEach((file) => {
-          data.append('multimedia', file);
-        });
+      if (!editingEvent && !formData.thumbnail) {
+        alert('Harap upload thumbnail untuk event baru.');
+        return;
       }
 
-      if (editingEvent) {
-        await api.put(`/events/${editingEvent._id}`, data, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        alert('Event updated successfully');
-      } else {
-        await api.post('/events', data, {
-          headers: { 'Content-Type': 'multipart/form-data' },
-        });
-        alert('Event created successfully');
+      try {
+        const data = new FormData();
+        data.append('title', formData.title);
+        data.append('subtitle', formData.subtitle);
+        data.append('description', formData.description);
+        data.append('location', formData.location);
+        data.append('date', formData.date);
+        data.append('time', formData.time);
+        data.append('contact', formData.contact);
+
+        if (formData.thumbnail) data.append('thumbnail', formData.thumbnail);
+
+        if (formData.multimedia && formData.multimedia.length > 0) {
+          formData.multimedia.forEach((file) => {
+            data.append('multimedia', file);
+          });
+        }
+
+        if (editingEvent) {
+          await api.put(`/events/${editingEvent._id}`, data);
+          alert('Event berhasil diupdate');
+        } else {
+          await api.post('/events', data);
+          alert('Event berhasil ditambahkan');
+        }
+
+        closeModal();
+        fetchEvents();
+      } catch (err) {
+        console.error('Error saving event:', err);
+        alert(err.response?.data?.message || 'Gagal menyimpan event');
       }
+    },
+    [formData, editingEvent, closeModal, fetchEvents]
+  );
 
-      closeModal();
-      fetchEvents();
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to save event');
-    }
+  const handleDelete = useCallback(
+    async (id) => {
+      if (!window.confirm('Are you sure you want to delete this event?'))
+        return;
+      try {
+        await api.delete(`/events/${id}`);
+        alert('Event berhasil dihapus');
+        fetchEvents();
+      } catch (err) {
+        console.error('Error deleting event:', err);
+        alert(err.response?.data?.message || 'Gagal menghapus event');
+      }
+    },
+    [fetchEvents]
+  );
+
+  const filteredEvents = events.filter((e) =>
+    (e.title ?? '').toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
+  const displayedEvents = filteredEvents.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const goToPage = (page) => {
+    if (page < 1 || page > totalPages) return;
+    setCurrentPage(page);
   };
 
-  // Delete event
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this event?')) return;
-    try {
-      await api.delete(`/events/${id}`);
-      alert('Event deleted');
-      fetchEvents();
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to delete event');
-    }
-  };
-
-  if (loading) return <div>Loading...</div>;
+  if (loading)
+    return (
+      <div className="flex justify-center items-center min-h-screen text-xl">
+        Loading...
+      </div>
+    );
 
   return (
     <div className="admin-manage-events p-6 w-full max-w-7xl mx-auto flex flex-col">

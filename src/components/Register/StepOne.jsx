@@ -6,8 +6,8 @@ const StepOne = ({ formData, handleChange, nextStep }) => {
   const [isButtonEnabled, setIsButtonEnabled] = useState(false);
 
   useEffect(() => {
-    const { namaDepan, namaPengguna, email, password } = formData;
-    setIsButtonEnabled(!!(namaDepan && namaPengguna && email && password));
+    const { namaLengkap, namaPengguna, email, password } = formData;
+    setIsButtonEnabled(!!(namaLengkap && namaPengguna && email && password));
   }, [formData]);
 
   const handleSubmit = (e) => {
@@ -30,10 +30,10 @@ const StepOne = ({ formData, handleChange, nextStep }) => {
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           <div className="flex justify-between gap-5 max-md:flex-col max-md:gap-4">
             <InputField
-              label="Nama Depan"
-              name="namaDepan"
-              placeholder="Tuliskan nama depan"
-              value={formData.namaDepan}
+              label="Nama Lengkap"
+              name="namaLengkap"
+              placeholder="Tuliskan lengkap depan"
+              value={formData.namaLengkap}
               handleChange={handleChange}
             />
             <InputField

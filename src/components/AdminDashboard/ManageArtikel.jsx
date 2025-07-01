@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit'; // sudah termasuk Code extension
+import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Underline from '@tiptap/extension-underline';
 import api from '../../services/api';
@@ -197,10 +197,8 @@ const ManageArtikel = () => {
   const navigate = useNavigate();
   const [artikels, setArtikels] = useState([]);
   const [loading, setLoading] = useState(true);
-
   const [isEditing, setIsEditing] = useState(false);
   const [editArtikel, setEditArtikel] = useState(null);
-
   const [formData, setFormData] = useState({
     title: '',
     content: '',
@@ -209,31 +207,33 @@ const ManageArtikel = () => {
     newCoverImage: null,
     existingCoverImage: '',
   });
-
   const [isAdding, setIsAdding] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-
   const itemsPerPage = 10;
 
-  // Inject CSS untuk jarak antar paragraf, heading, list, blockquote
+  // Penanganan otorisasi di frontend: hanya admin yang bisa akses halaman ini
+  useEffect(() => {
+    const userRole = localStorage.getItem('userRole');
+    if (userRole !== 'admin') {
+      alert('Anda tidak memiliki izin untuk mengakses halaman ini.');
+      navigate('/');
+    }
+  }, [navigate]);
+
+  // Inject CSS untuk styling Tiptap editor
   useEffect(() => {
     const styleTag = document.createElement('style');
     styleTag.id = 'custom-prose-styles';
     styleTag.innerHTML = `
-      .prose p {
-        margin-bottom: 1rem;
-      }
+      .prose p { margin-bottom: 1rem; }
       .prose h1, .prose h2, .prose h3 {
         margin-top: 1.5rem;
         margin-bottom: 1rem;
         font-weight: medium;
         font-family: "Lexend", serif;
       }
-      .prose ul, .prose ol {
-        margin-bottom: 1rem;
-        padding-left: 1.25rem;
-      }
+      .prose ul, .prose ol { margin-bottom: 1rem; padding-left: 1.25rem; }
       .prose blockquote {
         margin: 1rem 0;
         padding-left: 1rem;
@@ -250,21 +250,29 @@ const ManageArtikel = () => {
     };
   }, []);
 
-  const fetchArtikels = async () => {
+  const fetchArtikels = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get('/artikels');
       setArtikels(res.data);
     } catch (err) {
+      console.error('Error fetching artikels:', err);
       alert(err.response?.data?.message || 'Gagal mengambil data artikel');
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('userId');
+        navigate('/login');
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
 
   useEffect(() => {
     fetchArtikels();
-  }, []);
+  }, [fetchArtikels]);
 
   const handleDelete = async (id) => {
     if (!window.confirm('Yakin ingin menghapus artikel ini?')) return;
@@ -273,19 +281,19 @@ const ManageArtikel = () => {
       alert('Artikel berhasil dihapus');
       fetchArtikels();
     } catch (err) {
+      console.error('Error deleting artikel:', err);
       alert(err.response?.data?.message || 'Gagal menghapus artikel');
     }
   };
 
   const editor = useEditor({
-    extensions: [StarterKit, Underline, Link], // jangan pakai Code karena sudah termasuk StarterKit
+    extensions: [StarterKit, Underline, Link],
     content: formData.content,
     onUpdate: ({ editor }) => {
       setFormData((prev) => ({ ...prev, content: editor.getHTML() }));
     },
   });
 
-  // Sinkronisasi konten editor setiap kali formData.content berubah
   useEffect(() => {
     if (editor && formData.content !== editor.getHTML()) {
       editor.commands.setContent(formData.content);
@@ -370,6 +378,7 @@ const ManageArtikel = () => {
       closeEditModal();
       fetchArtikels();
     } catch (err) {
+      console.error('Error updating artikel:', err);
       alert(err.response?.data?.message || 'Gagal mengupdate artikel');
     }
   };
@@ -404,6 +413,7 @@ const ManageArtikel = () => {
       closeAddModal();
       fetchArtikels();
     } catch (err) {
+      console.error('Error adding artikel:', err);
       alert(err.response?.data?.message || 'Gagal menambahkan artikel');
     }
   };
@@ -427,7 +437,12 @@ const ManageArtikel = () => {
     setCurrentPage(page);
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading)
+    return (
+      <div className="flex justify-center items-center min-h-screen text-xl">
+        Loading...
+      </div>
+    );
 
   return (
     <div className="admin-manage-artikels flex flex-col items-end p-6 w-full mx-auto">

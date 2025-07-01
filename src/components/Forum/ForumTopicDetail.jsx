@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import Button from '../../components/Ui/Button';
 import LoginPopup from '../Layout/LoginPopup';
 import api from '../../services/api';
@@ -7,26 +7,49 @@ import IcArrow from '../../assets/icons/ic-arrow_right-v2.svg';
 
 const ForumTopicDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [topicData, setTopicData] = useState(null);
   const [comments, setComments] = useState([]);
   const [comment, setComment] = useState('');
   const [showLoginPopup, setShowLoginPopup] = useState(false);
   const textareaRef = useRef(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchTopicData = useCallback(async () => {
+    try {
+      const resTopic = await api.get(`/forums/${id}`);
+      setTopicData(resTopic.data);
+      setError(null);
+    } catch (error) {
+      console.error('Error fetching topic data:', error);
+      setError(error.response?.data?.message || 'Gagal memuat detail topik.');
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('userId');
+        navigate('/login');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [id, navigate]);
+
+  const fetchComments = useCallback(async () => {
+    try {
+      const resComments = await api.get(`/comments/forum/${id}`);
+      setComments(resComments.data);
+    } catch (error) {
+      console.error('Error fetching comments:', error);
+      alert(error.response?.data?.message || 'Gagal memuat komentar.');
+    }
+  }, [id]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const resTopic = await api.get(`/forums/${id}`);
-        setTopicData(resTopic.data);
-
-        const resComments = await api.get(`/comments/forum/${id}`);
-        setComments(resComments.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    fetchData();
-  }, [id]);
+    fetchTopicData();
+    fetchComments();
+  }, [fetchTopicData, fetchComments]);
 
   useEffect(() => {
     if (window.location.hash === '#add-comment' && textareaRef.current) {
@@ -37,45 +60,66 @@ const ForumTopicDetail = () => {
   const handleCommentChange = (e) => {
     setComment(e.target.value);
     const textarea = textareaRef.current;
-    textarea.style.height = 'auto';
-    textarea.style.height = `${textarea.scrollHeight}px`;
+    if (textarea) {
+      textarea.style.height = 'auto';
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
   };
 
   const handleSubmit = async () => {
-    if (!localStorage.getItem('token')) {
+    const token = localStorage.getItem('token');
+    const userId = localStorage.getItem('userId');
+
+    if (!token || !userId) {
       setShowLoginPopup(true);
       return;
     }
-    if (!comment.trim()) return;
+    if (!comment.trim()) {
+      alert('Komentar tidak boleh kosong.');
+      return;
+    }
 
     try {
       const res = await api.post('/comments', {
         forumID: id,
         content: comment,
+        userID: userId,
       });
       setComments((prev) => [...prev, res.data]);
       setComment('');
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto';
+      }
     } catch (error) {
-      alert('Gagal mengirim komentar.');
-      console.error(error);
+      console.error('Error submitting comment:', error);
+      alert(error.response?.data?.message || 'Gagal mengirim komentar.');
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('userId');
+        navigate('/login');
+      }
     }
   };
 
   const closeLoginPopup = () => setShowLoginPopup(false);
 
-  // Helper untuk mendapatkan URL gambar profile lengkap
   const getProfilePicUrl = (profilePic) => {
     if (!profilePic) return '/defaultProfilePic.jpg';
     if (profilePic.startsWith('http')) return profilePic;
-    return profilePic;
+    return `${import.meta.env.VITE_API_BASE_URL.replace('/api', '')}/${profilePic}`;
   };
+
+  if (loading) return <div className="flex justify-center items-center min-h-screen text-xl">Loading...</div>;
+  if (error) return <div className="flex justify-center items-center min-h-screen text-xl text-red-600">{error}</div>;
 
   return (
     <section className="pt-[65px] pb-[100px]">
       <div className="container">
         {!topicData ? (
           <p className="text-center py-20 text-gray-500 bg-white p-[50px] rounded-[20px]">
-            Loading...
+            Topik tidak ditemukan atau terjadi kesalahan.
           </p>
         ) : (
           <div className="bg-white p-[50px] rounded-[20px] max-md:p-6">
@@ -91,13 +135,13 @@ const ForumTopicDetail = () => {
             <div className="pb-[70px] border-b-[1px] border-[#D4DADF] mb-[70px] max-lg:pb-10 max-lg:mb-10">
               <div className="flex items-start gap-5 mb-4">
                 <img
-                  src={getProfilePicUrl(topicData.userID.profilePic)}
-                  alt={topicData.userID.firstName || topicData.userID.username}
+                  src={getProfilePicUrl(topicData.userID?.profilePic)}
+                  alt={topicData.userID?.firstName || topicData.userID?.username || 'User'}
                   className="w-16 h-16 rounded-full object-cover max-md:w-12 max-md:h-12"
                 />
                 <div>
                   <p className="font-semibold text-gray-800">
-                    {topicData.userID.firstName || topicData.userID.username}
+                    {topicData.userID?.firstName || topicData.userID?.username || 'User'}
                   </p>
                   <span className="text-gray-500 text-sm">
                     {new Date(topicData.creationDate).toLocaleDateString(
@@ -117,7 +161,7 @@ const ForumTopicDetail = () => {
             </div>
 
             <div className="flex flex-col gap-12">
-              <h3 className="text-lg font-semibold text-(--blue)">
+              <h3 className="text-lg font-semibold text-[var(--blue)]">
                 Diskusi ({comments.length})
               </h3>
 
@@ -125,13 +169,13 @@ const ForumTopicDetail = () => {
                 <div key={c._id} className="flex flex-col gap-6 mb-6">
                   <div className="flex items-start gap-5">
                     <img
-                      src={getProfilePicUrl(c.userID.profilePic)}
-                      alt={c.userID.firstName || c.userID.username || 'User'}
+                      src={getProfilePicUrl(c.userID?.profilePic)}
+                      alt={c.userID?.firstName || c.userID?.username || 'User'}
                       className="w-16 h-16 rounded-full object-cover"
                     />
                     <div>
                       <p className="font-semibold text-gray-700">
-                        {c.userID.firstName || c.userID.username}
+                        {c.userID?.firstName || c.userID?.username || 'User'}
                       </p>
                       <span className="text-gray-500 text-sm">
                         {new Date(c.creationDate).toLocaleDateString('id-ID', {

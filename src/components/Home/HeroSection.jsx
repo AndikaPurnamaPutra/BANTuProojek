@@ -15,7 +15,8 @@ const HeroSection = () => {
           <div className="content flex flex-col gap-12 max-md:gap-6">
             <div className="content-sub flex flex-col gap-0.5 items-end max-xl:items-start">
               <h1 className="title-h1">Bantu Perkenalkan</h1>
-              <h1 className="title-h1 text-(--blue-light)! mr-64 max-xl:mr-[unset]">
+              {/* PERBAIKAN: Sintaks variabel CSS */}
+              <h1 className="title-h1 text-[var(--blue-light)]! mr-64 max-xl:mr-[unset]">
                 Karya Terbaikmu
               </h1>
             </div>

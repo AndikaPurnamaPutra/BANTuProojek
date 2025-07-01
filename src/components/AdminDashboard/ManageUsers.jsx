@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 
@@ -18,43 +18,68 @@ const ManageUsers = () => {
   });
   const [isAdding, setIsAdding] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  // PERBAIKAN 1: Deklarasi state error yang benar
+  const [errorMessage, setErrorMessage] = useState(null); 
 
-  const fetchUsers = async () => {
+  // Penanganan otorisasi di frontend: hanya admin yang bisa akses halaman ini
+  useEffect(() => {
+    const userRole = localStorage.getItem('userRole');
+    if (userRole !== 'admin') {
+      alert('Anda tidak memiliki izin untuk mengakses halaman ini.');
+      navigate('/');
+    }
+  }, [navigate]);
+
+  // Fetch users menggunakan useCallback
+  const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await api.get('/admin/users');
-      setUsers(response.data);
+      const response = await api.get('/users/admin/users');
+      const currentUserId = localStorage.getItem('userId');
+      const filteredUsers = response.data.filter(user => user._id !== currentUserId);
+      setUsers(filteredUsers);
     } catch (error) {
-      alert(error.response?.data?.message || 'Gagal mengambil data user');
+      console.error('Error fetching users:', error); // Log objek error lengkap
+      // PERBAIKAN 2: Set errorMessage state dengan pesan yang bisa dirender
+      setErrorMessage(error.response?.data?.message || error.message || 'Gagal mengambil data user'); 
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('userId');
+        navigate('/login');
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [fetchUsers]);
 
-  const handleDelete = async (userId) => {
+  const handleDelete = useCallback(async (userId) => {
     if (!window.confirm('Yakin ingin menghapus user ini?')) return;
     try {
-      await api.delete(`/admin/users/${userId}`);
-      fetchUsers();
+      await api.delete(`/users/admin/users/${userId}`);
       alert('User berhasil dihapus');
+      fetchUsers();
     } catch (error) {
-      alert(error.response?.data?.message || 'Gagal menghapus user');
+      console.error('Error deleting user:', error); // Log objek error lengkap
+      alert(error.response?.data?.message || error.message || 'Gagal menghapus user');
     }
-  };
+  }, [fetchUsers]);
 
-  const handleResetPassword = async (userId) => {
+  const handleResetPassword = useCallback(async (userId) => {
     if (!window.confirm('Reset password user ke default "12345678"?')) return;
     try {
-      await api.put(`/admin/users/${userId}`, { password: '12345678' });
+      await api.put(`/users/admin/users/${userId}`, { password: '12345678' });
       alert('Password user berhasil di-reset');
     } catch (error) {
-      alert(error.response?.data?.message || 'Gagal reset password');
+      console.error('Error resetting password:', error); // Log objek error lengkap
+      alert(error.response?.data?.message || error.message || 'Gagal reset password');
     }
-  };
+  }, []);
 
   const openEditModal = (user) => {
     setEditUser(user);
@@ -72,11 +97,7 @@ const ManageUsers = () => {
     setIsEditing(false);
     setEditUser(null);
     setFormData({
-      firstName: '',
-      username: '',
-      email: '',
-      role: '',
-      password: '',
+      firstName: '', username: '', email: '', role: '', password: '',
     });
   };
 
@@ -94,11 +115,7 @@ const ManageUsers = () => {
   const closeAddModal = () => {
     setIsAdding(false);
     setFormData({
-      firstName: '',
-      username: '',
-      email: '',
-      role: '',
-      password: '',
+      firstName: '', username: '', email: '', role: '', password: '',
     });
   };
 
@@ -107,39 +124,60 @@ const ManageUsers = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleUpdateUser = async (e) => {
+  const handleUpdateUser = useCallback(async (e) => {
     e.preventDefault();
     try {
-      await api.put(`/admin/users/${editUser._id}`, formData);
-      fetchUsers();
+      const updateData = {
+        firstName: formData.firstName,
+        username: formData.username,
+        email: formData.email,
+        role: formData.role,
+      };
+      if (formData.password) {
+        updateData.password = formData.password;
+      }
+
+      await api.put(`/users/admin/users/${editUser._id}`, updateData);
       alert('User berhasil diupdate');
       closeEditModal();
+      fetchUsers();
     } catch (error) {
-      alert(error.response?.data?.message || 'Gagal mengupdate user');
+      console.error('Error updating user:', error); // Log objek error lengkap
+      alert(error.response?.data?.message || error.message || 'Gagal mengupdate user');
     }
-  };
+  }, [formData, editUser, closeEditModal, fetchUsers]);
 
-  const handleAddUser = async (e) => {
+  const handleAddUser = useCallback(async (e) => {
     e.preventDefault();
     try {
-      await api.post('/admin/users', formData);
-      fetchUsers();
+      const userData = {
+        firstName: formData.firstName,
+        username: formData.username,
+        email: formData.email,
+        role: formData.role,
+        password: formData.password,
+      };
+      await api.post('/users/admin/users', userData);
       alert('User berhasil ditambahkan');
       closeAddModal();
+      fetchUsers();
     } catch (error) {
-      alert(error.response?.data?.message || 'Gagal menambahkan user');
+      console.error('Error adding user:', error); // Log objek error lengkap
+      alert(error.response?.data?.message || error.message || 'Gagal menambahkan user');
     }
-  };
+  }, [formData, closeAddModal, fetchUsers]);
 
   const filteredUsers = users.filter(
     (user) =>
       user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (user.firstName &&
-        user.firstName.toLowerCase().includes(searchTerm.toLowerCase()))
+      (user.firstName && user.firstName.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div className="flex justify-center items-center min-h-screen text-xl">Loading...</div>;
+  // PERBAIKAN 3: Render errorMessage (string)
+  if (errorMessage) return <div className="flex justify-center items-center min-h-screen text-xl text-red-600">{errorMessage}</div>;
+
 
   return (
     <div className="admin-manage-users flex flex-col items-end p-6">
@@ -191,12 +229,12 @@ const ManageUsers = () => {
                 >
                   Edit
                 </button>
-                {/* <button
+                <button
                   onClick={() => handleResetPassword(user._id)}
                   className="text-yellow-600 hover:text-yellow-800"
                 >
                   Reset Password
-                </button> */}
+                </button>
                 <button
                   onClick={() => handleDelete(user._id)}
                   className="text-red-600 hover:text-red-800"

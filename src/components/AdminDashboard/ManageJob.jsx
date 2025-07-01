@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import api from '../../services/api';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Underline from '@tiptap/extension-underline';
-import api from '../../services/api';
 
-const BASE_URL = 'http://localhost:3000';
-
+// MenuBar component untuk Tiptap editor
 const buttonBaseClass = `px-3 py-1 rounded border focus:outline-none transition`;
 const activeClass = `bg-blue-600 text-white border-blue-600`;
 const inactiveClass = `bg-white text-gray-700 border-gray-300 hover:bg-gray-100`;
@@ -204,32 +203,53 @@ const ManageJob = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  // Penanganan otorisasi di frontend: hanya admin yang bisa akses halaman ini
   useEffect(() => {
-    fetchJobs();
-  }, []);
+    const userRole = localStorage.getItem('userRole');
+    if (userRole !== 'admin') {
+      alert('Anda tidak memiliki izin untuk mengakses halaman ini.');
+      navigate('/');
+    }
+  }, [navigate]);
 
-  const fetchJobs = async () => {
+  const fetchJobs = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get('/lokers');
       setJobs(res.data);
     } catch (err) {
+      console.error('Error fetching jobs:', err);
       alert(err.response?.data?.message || 'Gagal mengambil data job');
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('userId');
+        navigate('/login');
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Yakin ingin menghapus job ini?')) return;
-    try {
-      await api.delete(`/lokers/${id}`);
-      alert('Job berhasil dihapus');
-      fetchJobs();
-    } catch (err) {
-      alert(err.response?.data?.message || 'Gagal menghapus job');
-    }
-  };
+  useEffect(() => {
+    fetchJobs();
+  }, [fetchJobs]);
+
+  const handleDelete = useCallback(
+    async (id) => {
+      if (!window.confirm('Yakin ingin menghapus job ini?')) return;
+      try {
+        await api.delete(`/lokers/${id}`);
+        alert('Job berhasil dihapus');
+        fetchJobs();
+      } catch (err) {
+        console.error('Error deleting job:', err);
+        alert(err.response?.data?.message || 'Gagal menghapus job');
+      }
+    },
+    [fetchJobs]
+  );
 
   const openEditModal = (job) => {
     setEditJob(job);
@@ -245,22 +265,30 @@ const ManageJob = () => {
       existingThumbnail: job.thumbnail || '',
     });
     setIsEditing(true);
+    editorDescription?.commands.setContent(job.description || '');
+    editorRequirements?.commands.setContent(job.requirements || '');
   };
 
   const closeEditModal = () => {
     setIsEditing(false);
     setEditJob(null);
     resetForm();
+    editorDescription?.commands.setContent('');
+    editorRequirements?.commands.setContent('');
   };
 
   const openAddModal = () => {
     resetForm();
     setIsAdding(true);
+    editorDescription?.commands.setContent('');
+    editorRequirements?.commands.setContent('');
   };
 
   const closeAddModal = () => {
     setIsAdding(false);
     resetForm();
+    editorDescription?.commands.setContent('');
+    editorRequirements?.commands.setContent('');
   };
 
   const resetForm = () => {
@@ -298,6 +326,24 @@ const ManageJob = () => {
     },
   });
 
+  useEffect(() => {
+    if (
+      editorDescription &&
+      formData.description !== editorDescription.getHTML()
+    ) {
+      editorDescription.commands.setContent(formData.description);
+    }
+  }, [formData.description, editorDescription]);
+
+  useEffect(() => {
+    if (
+      editorRequirements &&
+      formData.requirements !== editorRequirements.getHTML()
+    ) {
+      editorRequirements.commands.setContent(formData.requirements);
+    }
+  }, [formData.requirements, editorRequirements]);
+
   const handleFileChange = (e) => {
     setFormData((prev) => ({
       ...prev,
@@ -305,61 +351,65 @@ const ManageJob = () => {
     }));
   };
 
-  const handleUpdateJob = async (e) => {
-    e.preventDefault();
-    try {
-      const data = new FormData();
-      data.append('position', formData.position);
-      data.append('company', formData.company);
-      data.append('description', formData.description);
-      data.append('requirements', formData.requirements);
-      data.append('location', formData.location);
-      if (formData.salaryMin) data.append('salaryMin', formData.salaryMin);
-      if (formData.salaryMax) data.append('salaryMax', formData.salaryMax);
-      if (formData.thumbnail) data.append('thumbnail', formData.thumbnail);
+  const handleUpdateJob = useCallback(
+    async (e) => {
+      e.preventDefault();
+      try {
+        const data = new FormData();
+        data.append('position', formData.position);
+        data.append('company', formData.company);
+        data.append('description', formData.description);
+        data.append('requirements', formData.requirements);
+        data.append('location', formData.location);
+        if (formData.salaryMin) data.append('salaryMin', formData.salaryMin);
+        if (formData.salaryMax) data.append('salaryMax', formData.salaryMax);
+        if (formData.thumbnail) data.append('thumbnail', formData.thumbnail);
 
-      await api.put(`/lokers/${editJob._id}`, data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+        await api.put(`/lokers/${editJob._id}`, data);
 
-      alert('Job berhasil diupdate');
-      closeEditModal();
-      fetchJobs();
-    } catch (err) {
-      alert(err.response?.data?.message || 'Gagal mengupdate job');
-    }
-  };
+        alert('Job berhasil diupdate');
+        closeEditModal();
+        fetchJobs();
+      } catch (err) {
+        console.error('Error updating job:', err);
+        alert(err.response?.data?.message || 'Gagal mengupdate job');
+      }
+    },
+    [formData, editJob, closeEditModal, fetchJobs]
+  );
 
-  const handleAddJob = async (e) => {
-    e.preventDefault();
+  const handleAddJob = useCallback(
+    async (e) => {
+      e.preventDefault();
 
-    if (!formData.thumbnail) {
-      alert('Harap upload thumbnail media');
-      return;
-    }
+      if (!formData.thumbnail) {
+        alert('Harap upload thumbnail media');
+        return;
+      }
 
-    try {
-      const data = new FormData();
-      data.append('position', formData.position);
-      data.append('company', formData.company);
-      data.append('description', formData.description);
-      data.append('requirements', formData.requirements);
-      data.append('location', formData.location);
-      if (formData.salaryMin) data.append('salaryMin', formData.salaryMin);
-      if (formData.salaryMax) data.append('salaryMax', formData.salaryMax);
-      data.append('thumbnail', formData.thumbnail);
+      try {
+        const data = new FormData();
+        data.append('position', formData.position);
+        data.append('company', formData.company);
+        data.append('description', formData.description);
+        data.append('requirements', formData.requirements);
+        data.append('location', formData.location);
+        if (formData.salaryMin) data.append('salaryMin', formData.salaryMin);
+        if (formData.salaryMax) data.append('salaryMax', formData.salaryMax);
+        data.append('thumbnail', formData.thumbnail);
 
-      await api.post('/lokers', data, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+        await api.post('/lokers', data);
 
-      alert('Job berhasil ditambahkan');
-      closeAddModal();
-      fetchJobs();
-    } catch (err) {
-      alert(err.response?.data?.message || 'Gagal menambahkan job');
-    }
-  };
+        alert('Job berhasil ditambahkan');
+        closeAddModal();
+        fetchJobs();
+      } catch (err) {
+        console.error('Error adding job:', err);
+        alert(err.response?.data?.message || 'Gagal menambahkan job');
+      }
+    },
+    [formData, closeAddModal, fetchJobs]
+  );
 
   const filteredJobs = jobs.filter((job) =>
     job.position.toLowerCase().includes(searchTerm.toLowerCase())
@@ -377,10 +427,15 @@ const ManageJob = () => {
     setCurrentPage(page);
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading)
+    return (
+      <div className="flex justify-center items-center min-h-screen text-xl">
+        Loading...
+      </div>
+    );
 
   return (
-    <div className="admin-manage-jobs flex flex-col items-end p-6 w-full mx-auto">
+    <div className="admin-manage-jobs p-6 w-full max-w-7xl mx-auto flex flex-col">
       <div className="flex justify-between items-center mb-6 w-full">
         <button
           onClick={() => navigate('/admin/dashboard')}
@@ -388,7 +443,7 @@ const ManageJob = () => {
         >
           &larr; Back to Dashboard
         </button>
-        <h1 className="text-3xl font-medium text-gray-800">Manage Jobs</h1>
+        <h1 className="text-3xl font-semibold text-gray-800">Manage Jobs</h1>
         <button
           onClick={openAddModal}
           className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"

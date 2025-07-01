@@ -21,15 +21,14 @@ const AdminRegister = () => {
     setErrorMessage(null); // Reset error message on submit
 
     try {
-      const response = await api.post('/admin/register-admin', {
+      const response = await api.post('/users/register', {
         username: username.trim(),
         email: email.trim(),
         password,
+        role: 'admin',
       });
 
-      const token = response.data.token;
-      localStorage.setItem('token', token);
-      navigate('/admin/login');
+      navigate('/login');
     } catch (error) {
       // Handle error response message gracefully
       const message =
@@ -128,7 +127,7 @@ const AdminRegister = () => {
           <p className="text-[18px] font-light text-[#7F909F]">
             Sudah punya akun?{' '}
             <a
-              href="/admin/login"
+              href="/login"
               className="text-blue-600 font-medium hover:underline"
             >
               Masuk

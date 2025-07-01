@@ -3,13 +3,17 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import Button from '../Ui/Button';
 import LoginPopup from '../Layout/LoginPopup';
 import SuccessMessagePopup from '../Layout/SuccessMessagePopup';
+import api from '../../services/api'; // Import instance Axios yang telah dikonfigurasi
 
 const PortfolioFormHire = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
-  const author = state?.author || 'Unknown Author';
 
-  const alertShown = useRef(false); // ref untuk menandai alert sudah tampil
+  // Ekstrak author dan designerID dari state
+  const author = state?.author || 'Unknown Author';
+  const designerID = state?.designerID; // Dapatkan designerID dari state
+
+  const alertShown = useRef(false); // ref untuk menandai alert peran sudah tampil
 
   const [formData, setFormData] = useState({
     judulProyek: '',
@@ -33,8 +37,9 @@ const PortfolioFormHire = () => {
       return;
     }
 
+    // Jika pengguna bukan artisan dan pesan belum ditampilkan
     if (role !== 'artisan' && !alertShown.current) {
-      alertShown.current = true; // tandai alert sudah muncul
+      alertShown.current = true; // Tandai pesan sudah muncul
       alert('Hanya artisan yang bisa mengakses halaman ini.');
       navigate('/portfolio');
     }
@@ -44,10 +49,10 @@ const PortfolioFormHire = () => {
     const { name, value } = e.target;
     // Filter input hanya angka untuk estimasiAnggaranMin dan estimasiAnggaranMax
     if (
-      /[^0-9]/.test(value) &&
-      (name === 'estimasiAnggaranMin' || name === 'estimasiAnggaranMax')
+      (name === 'estimasiAnggaranMin' || name === 'estimasiAnggaranMax') &&
+      /[^0-9]/.test(value)
     ) {
-      return;
+      return; // Jangan perbarui state jika karakter non-angka dimasukkan
     }
     setFormData((prev) => ({
       ...prev,
@@ -66,14 +71,15 @@ const PortfolioFormHire = () => {
     if (
       !formData.estimasiAnggaranMin ||
       isNaN(formData.estimasiAnggaranMin) ||
-      formData.estimasiAnggaranMin < 100000
+      Number(formData.estimasiAnggaranMin) < 100000
     ) {
       newErrors.estimasiAnggaranMin =
         'Estimasi anggaran minimal harus lebih dari atau sama dengan 100.000';
     }
     if (
       formData.estimasiAnggaranMax &&
-      Number(formData.estimasiAnggaranMax) < Number(formData.estimasiAnggaranMin)
+      Number(formData.estimasiAnggaranMax) <
+        Number(formData.estimasiAnggaranMin)
     ) {
       newErrors.estimasiAnggaranMax =
         'Anggaran maksimal harus lebih besar dari anggaran minimal';
@@ -100,29 +106,26 @@ const PortfolioFormHire = () => {
       return;
     }
 
+    if (!designerID) {
+      alert(
+        'ID Desainer tidak ditemukan. Kembali ke halaman portofolio dan coba lagi.'
+      );
+      return;
+    }
+
     try {
-      const res = await fetch('http://localhost:3000/api/projects', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          judulProyek: formData.judulProyek,
-          deskripsi: formData.deskripsi,
-          estimasiPengerjaan: Number(formData.estimasiPengerjaan),
-          estimasiAnggaranMin: Number(formData.estimasiAnggaranMin),
-          estimasiAnggaranMax: Number(formData.estimasiAnggaranMax),
-          artisanID,
-        }),
+      // Menggunakan api.post dari Axios
+      const res = await api.post('/projects', {
+        judulProyek: formData.judulProyek,
+        deskripsi: formData.deskripsi,
+        estimasiPengerjaan: Number(formData.estimasiPengerjaan),
+        estimasiAnggaranMin: Number(formData.estimasiAnggaranMin),
+        estimasiAnggaranMax: Number(formData.estimasiAnggaranMax),
+        artisanID, // Ini akan ditimpa oleh req.user.userId di backend, tapi bagus untuk disertakan demi kejelasan
+        designerID, // Kirim designerID
       });
 
-      if (!res.ok) {
-        const errData = await res.json();
-        alert('Gagal kirim proyek: ' + (errData.message || res.statusText));
-        return;
-      }
-
+      // Axios secara otomatis melempar error untuk status non-2xx, jadi tidak perlu `if (!res.ok)`
       setShowSuccessPopup(true);
       setFormData({
         judulProyek: '',
@@ -132,7 +135,13 @@ const PortfolioFormHire = () => {
         estimasiAnggaranMax: '',
       });
     } catch (error) {
-      alert('Terjadi kesalahan saat mengirim proyek.');
+      // Penanganan error Axios
+      alert(
+        'Gagal kirim proyek: ' +
+          (error.response?.data?.message ||
+            error.message ||
+            'Terjadi kesalahan.')
+      );
       console.error(error);
     }
   };
@@ -143,7 +152,9 @@ const PortfolioFormHire = () => {
         <div className="container">
           <div className="flex flex-col gap-12 bg-white p-12.5 rounded-[20px] max-md:p-5">
             <div className="flex items-center gap-5 max-md:flex-col max-md:items-start max-md:gap-0">
-              <h1 className="text-[36px] leading-[150%] text-black">Buat Proyek</h1>
+              <h1 className="text-[36px] leading-[150%] text-black">
+                Buat Proyek
+              </h1>
               <span className="text-(--blue) text-lg">{author}</span>
             </div>
 
@@ -164,7 +175,9 @@ const PortfolioFormHire = () => {
                     className="p-3 border border-gray-300 rounded-md"
                   />
                   {errors.judulProyek && (
-                    <p className="text-red-500 text-sm mt-2">{errors.judulProyek}</p>
+                    <p className="text-red-500 text-sm mt-2">
+                      {errors.judulProyek}
+                    </p>
                   )}
                 </div>
               </div>
@@ -187,15 +200,21 @@ const PortfolioFormHire = () => {
                     Isi mengenai detail proyek. Contoh: spesifikasi, tools, dll.
                   </p>
                   {errors.deskripsi && (
-                    <p className="text-red-500 text-sm mt-2">{errors.deskripsi}</p>
+                    <p className="text-red-500 text-sm mt-2">
+                      {errors.deskripsi}
+                    </p>
                   )}
                 </div>
               </div>
 
               {/* Estimasi Pengerjaan */}
               <div className="flex flex-col gap-3">
-                <label htmlFor="estimasiPengerjaan" className="text-sm font-medium">
-                  Estimasi Pengerjaan (hari) <span className="text-red-500">*</span>
+                <label
+                  htmlFor="estimasiPengerjaan"
+                  className="text-sm font-medium"
+                >
+                  Estimasi Pengerjaan (hari){' '}
+                  <span className="text-red-500">*</span>
                 </label>
                 <div className="flex flex-col">
                   <input
@@ -208,20 +227,27 @@ const PortfolioFormHire = () => {
                     className="p-3 border border-gray-300 rounded-md"
                   />
                   {errors.estimasiPengerjaan && (
-                    <p className="text-red-500 text-sm mt-2">{errors.estimasiPengerjaan}</p>
+                    <p className="text-red-500 text-sm mt-2">
+                      {errors.estimasiPengerjaan}
+                    </p>
                   )}
                 </div>
               </div>
 
               {/* Estimasi Anggaran */}
               <div className="flex flex-col">
-                <label htmlFor="estimasiAnggaran" className="text-sm font-medium mb-3">
+                <label
+                  htmlFor="estimasiAnggaran"
+                  className="text-sm font-medium mb-3"
+                >
                   Estimasi Anggaran <span className="text-red-500">*</span>
                 </label>
                 <div className="flex justify-between items-center gap-7 max-md:flex-col max-md:gap-4">
                   {/* Estimasi Anggaran Minimal */}
                   <div className="relative flex items-center w-full">
-                    <span className="absolute left-2 text-sm text-gray-600">Rp</span>
+                    <span className="absolute left-2 text-sm text-gray-600">
+                      Rp
+                    </span>
                     <input
                       type="text"
                       id="estimasiAnggaranMin"
@@ -237,7 +263,9 @@ const PortfolioFormHire = () => {
 
                   {/* Estimasi Anggaran Maksimal */}
                   <div className="relative flex items-center w-full">
-                    <span className="absolute left-2 text-sm text-gray-600">Rp</span>
+                    <span className="absolute left-2 text-sm text-gray-600">
+                      Rp
+                    </span>
                     <input
                       type="number"
                       id="estimasiAnggaranMax"
@@ -251,28 +279,41 @@ const PortfolioFormHire = () => {
                 </div>
 
                 {/* Keterangan Minimal Anggaran */}
-                {formData.estimasiAnggaranMin && formData.estimasiAnggaranMin < 100000 && (
-                  <p className="text-red-500 text-sm mt-2">Minimal anggaran: Rp 100.000</p>
-                )}
+                {formData.estimasiAnggaranMin &&
+                  Number(formData.estimasiAnggaranMin) < 100000 && (
+                    <p className="text-red-500 text-sm mt-2">
+                      Minimal anggaran: Rp 100.000
+                    </p>
+                  )}
 
                 {/* Keterangan Maksimal Anggaran */}
-                {formData.estimasiAnggaranMax && formData.estimasiAnggaranMax < formData.estimasiAnggaranMin && (
-                  <p className="text-red-500 text-sm mt-2">
-                    Anggaran maksimal harus lebih besar dari anggaran minimal.
-                  </p>
-                )}
+                {formData.estimasiAnggaranMax &&
+                  Number(formData.estimasiAnggaranMax) <
+                    Number(formData.estimasiAnggaranMin) && (
+                    <p className="text-red-500 text-sm mt-2">
+                      Anggaran maksimal harus lebih besar dari anggaran minimal.
+                    </p>
+                  )}
 
                 {errors.estimasiAnggaranMin && (
-                  <p className="text-red-500 text-sm mt-2">{errors.estimasiAnggaranMin}</p>
+                  <p className="text-red-500 text-sm mt-2">
+                    {errors.estimasiAnggaranMin}
+                  </p>
                 )}
                 {errors.estimasiAnggaranMax && (
-                  <p className="text-red-500 text-sm mt-2">{errors.estimasiAnggaranMax}</p>
+                  <p className="text-red-500 text-sm mt-2">
+                    {errors.estimasiAnggaranMax}
+                  </p>
                 )}
               </div>
 
               {/* Tombol Kirim */}
               <div className="flex">
-                <Button type="submit" variant="primary" className="cursor-pointer">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="cursor-pointer"
+                >
                   Hubungi Desainer
                 </Button>
               </div>
@@ -281,9 +322,15 @@ const PortfolioFormHire = () => {
         </div>
       </section>
 
-      {/* Popup */}
-      <LoginPopup isOpen={showLoginPopup} onClose={() => setShowLoginPopup(false)} />
-      <SuccessMessagePopup isOpen={showSuccessPopup} onClose={() => setShowSuccessPopup(false)} />
+      {/* Popups */}
+      <LoginPopup
+        isOpen={showLoginPopup}
+        onClose={() => setShowLoginPopup(false)}
+      />
+      <SuccessMessagePopup
+        isOpen={showSuccessPopup}
+        onClose={() => setShowSuccessPopup(false)}
+      />
     </>
   );
 };

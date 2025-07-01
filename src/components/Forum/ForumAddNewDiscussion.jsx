@@ -1,45 +1,78 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react'; // Tambahkan useCallback
 import Button from '../Ui/Button';
 import ForumAddSuccessPopup from '../Layout/ForumAddSuccessPopup';
 import LoginPopup from '../Layout/LoginPopup';
 import api from '../../services/api';
+import { useNavigate } from 'react-router-dom'; // Tambahkan useNavigate
 
 const ForumAddNewDiscussion = () => {
+  const navigate = useNavigate(); // Inisialisasi useNavigate
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const [showLoginPopup, setShowLoginPopup] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = useCallback(
+    async (e) => {
+      e.preventDefault();
+      setError(''); // Reset error sebelum validasi dan submit
 
-    if (title.length === 0) {
-      setError('Judul Diskusi tidak boleh kosong');
-      return;
-    }
-    // Hapus validasi maksimal karakter
-    if (description.length === 0) {
-      setError('Deskripsi tidak boleh kosong');
-      return;
-    }
+      // Validasi frontend
+      if (title.trim().length === 0) {
+        setError('Judul Diskusi tidak boleh kosong.');
+        return;
+      }
+      if (description.trim().length === 0) {
+        setError('Deskripsi tidak boleh kosong.');
+        return;
+      }
 
-    if (!localStorage.getItem('token')) {
-      setShowLoginPopup(true);
-      return;
-    }
+      const token = localStorage.getItem('token');
+      // Jika backend membutuhkan userID di body untuk membuat forum, ambil dari localStorage
+      // const userId = localStorage.getItem('userId');
 
-    try {
-      await api.post('/forums', { title, description });
-      setShowSuccessPopup(true);
-      setTitle('');
-      setDescription('');
-      setError('');
-    } catch (error) {
-      setError('Gagal membuat topik diskusi.');
-      console.error(error);
-    }
-  };
+      if (!token) {
+        // Periksa token
+        setShowLoginPopup(true);
+        return;
+      }
+
+      try {
+        await api.post('/forums', {
+          title: title.trim(), // Kirim data yang sudah di-trim
+          description: description.trim(), // Kirim data yang sudah di-trim
+          // Jika backend membutuhkan userID di body:
+          // creatorID: userId,
+        });
+        setShowSuccessPopup(true);
+        setTitle('');
+        setDescription('');
+        setError(''); // Reset error setelah sukses
+      } catch (error) {
+        console.error('Error creating forum topic:', error); // Logging error lebih detail
+        setError(
+          error.response?.data?.message || 'Gagal membuat topik diskusi.'
+        );
+        // Penanganan error 401/403
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          localStorage.removeItem('userRole');
+          localStorage.removeItem('userId');
+          navigate('/login'); // Arahkan ke halaman login
+        }
+      }
+    },
+    [
+      title,
+      description,
+      setError,
+      setShowSuccessPopup,
+      setShowLoginPopup,
+      navigate,
+    ]
+  ); // Dependency array
 
   return (
     <>

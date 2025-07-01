@@ -15,12 +15,10 @@ const PortfolioItem = ({
   const [isLiked, setIsLiked] = useState(initialLiked);
   const [likeCount, setLikeCount] = useState(likes);
 
-  // Update isLiked state saat props initialLiked berubah (misalnya saat data baru dari backend)
   useEffect(() => {
     setIsLiked(initialLiked);
   }, [initialLiked]);
 
-  // Update likeCount jika prop likes berubah (misalnya update dari parent)
   useEffect(() => {
     setLikeCount(likes);
   }, [likes]);
@@ -33,16 +31,20 @@ const PortfolioItem = ({
         return;
       }
 
-      const res = await api.put(`/portfolios/${id}/like`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await api.put(`/portfolios/${id}/like`);
 
-      // Sinkronisasi state dengan response dari backend
       setIsLiked(res.data.liked);
       setLikeCount(res.data.likesCount);
     } catch (error) {
       console.error('Error toggling like:', error);
-      alert('Gagal update like. Coba lagi.');
+      alert(error.response?.data?.message || 'Gagal update like. Coba lagi.');
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('userId');
+        window.location.href = '/login';
+      }
     }
   };
 
@@ -72,7 +74,7 @@ const PortfolioItem = ({
           <img
             src={profile}
             alt="Profile"
-            className="w-6 h-6 rounded-full object-cover border-2 border-(--blue-light)"
+            className="w-6 h-6 rounded-full object-cover border-2 border-[var(--blue-light)]"
           />
           <span className="text-[14px]">{author}</span>
         </Link>

@@ -53,6 +53,7 @@ const Register = () => {
       !formData.password ||
       !formData.role ||
       !formData.profilePicture ||
+      !formData.deskripsi || 
       formData.categories.length === 0
     ) {
       setError(

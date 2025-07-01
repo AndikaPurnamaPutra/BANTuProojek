@@ -7,7 +7,9 @@ const StepTwo = ({
   nextStep,
   prevStep,
 }) => {
-  const [imagePreview, setImagePreview] = useState(formData.profilePicture || null);
+  const [imagePreview, setImagePreview] = useState(
+    formData.profilePicture || null
+  );
   const [isButtonEnabled, setIsButtonEnabled] = useState(false);
 
   const validImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -26,16 +28,15 @@ const StepTwo = ({
     } else {
       // Jika file tidak sesuai tipe yang diinginkan, tampilkan pesan error
       alert('Mohon upload file gambar dengan format jpg, jpeg, png, atau webp');
+      e.target.value = null; // Reset input file jika tipe tidak valid
+      setImagePreview(null); // Kosongkan preview
+      handleImageChange(null); // Kosongkan file di formData induk
     }
   };
 
   // Effect untuk memeriksa apakah semua data telah diisi
   useEffect(() => {
-    if (formData.deskripsi && imagePreview) {
-      setIsButtonEnabled(true);
-    } else {
-      setIsButtonEnabled(false);
-    }
+    setIsButtonEnabled(!!(formData.deskripsi && imagePreview));
   }, [formData.deskripsi, imagePreview]);
 
   const handleSubmit = (e) => {
@@ -58,7 +59,9 @@ const StepTwo = ({
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           {/* Foto Profil */}
           <div className="flex flex-col gap-3">
-            <label className="text-lg font-light text-[#7F909F]">Foto Profil<span className="text-red-500">*</span></label>
+            <label className="text-lg font-light text-[#7F909F]">
+              Foto Profil<span className="text-red-500">*</span>
+            </label>
             <div className="flex items-center gap-4 max-md:flex-col max-md:items-start">
               {imagePreview ? (
                 <img
@@ -125,7 +128,10 @@ const StepTwo = ({
 
           {/* Deskripsi */}
           <div className="flex flex-col gap-3">
-            <label htmlFor="deskripsi" className="text-lg font-light text-[#7F909F]">
+            <label
+              htmlFor="deskripsi"
+              className="text-lg font-light text-[#7F909F]"
+            >
               Deskripsi Singkat<span className="text-red-500">*</span>
             </label>
             <textarea
@@ -152,7 +158,11 @@ const StepTwo = ({
             <button
               type="submit"
               disabled={!isButtonEnabled}
-              className={`py-3 px-6 transition-all duration-300 ${isButtonEnabled ? 'bg-(--blue) hover:bg-blue-700 text-white cursor-pointer' : 'bg-gray-300 text-gray-500 cursor-not-allowed'} rounded-full`}
+              className={`py-3 px-6 transition-all duration-300 ${
+                isButtonEnabled
+                  ? 'bg-(--blue) hover:bg-blue-700 text-white cursor-pointer'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              } rounded-full`}
             >
               Selanjutnya
             </button>

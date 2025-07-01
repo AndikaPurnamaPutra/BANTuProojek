@@ -8,16 +8,14 @@ export const register = (formData) => {
   });
 };
 
-export const login = (email, password) => {
-  return api.post('/users/login', { email, password });
+export const login = (emailOrUsername, password) => {
+  return api.post('/users/login', { emailOrUsername, password });
 };
 
-// Ambil data profil user yang sedang login (token otomatis dipakai)
 export const getProfile = () => {
   return api.get('/users/profile');
 };
 
-// Ambil data user berdasarkan id → PUBLIC REQUEST → tanpa token
 export const getUserById = (id) => {
   return api.get(`/users/${id}`, { headers: { 'No-Auth': true } });
 };

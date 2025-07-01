@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
 
@@ -23,34 +23,49 @@ const ManageForum = () => {
   const [commentForm, setCommentForm] = useState({ content: '' });
   const [editingComment, setEditingComment] = useState(null);
 
-  // Fetch forums
-  const fetchForums = async () => {
+  // Penanganan otorisasi di frontend: hanya admin yang bisa akses halaman ini
+  useEffect(() => {
+    const userRole = localStorage.getItem('userRole');
+    if (userRole !== 'admin') {
+      alert('Anda tidak memiliki izin untuk mengakses halaman ini.');
+      navigate('/');
+    }
+  }, [navigate]);
+
+  const fetchForums = useCallback(async () => {
     setLoading(true);
     try {
       const res = await api.get('/forums');
       setForums(res.data);
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to fetch forums');
+      console.error('Error fetching forums:', err);
+      alert(err.response?.data?.message || 'Gagal mengambil data forum');
+      if (err.response?.status === 401 || err.response?.status === 403) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('userRole');
+        localStorage.removeItem('userId');
+        navigate('/login');
+      }
     } finally {
       setLoading(false);
     }
-  };
+  }, [navigate]);
 
-  // Fetch comments for selected forum
-  const fetchComments = async (forumID) => {
+  const fetchComments = useCallback(async (forumID) => {
     try {
       const res = await api.get(`/comments/forum/${forumID}`);
       setComments(res.data);
     } catch (err) {
-      alert(err.response?.data?.message || 'Failed to fetch comments');
+      console.error('Error fetching comments:', err);
+      alert(err.response?.data?.message || 'Gagal mengambil komentar');
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchForums();
-  }, []);
+  }, [fetchForums]);
 
-  // Pagination logic
   const filteredForums = forums.filter((f) =>
     f.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -82,6 +97,7 @@ const ManageForum = () => {
   const closeForumModal = () => {
     setIsForumModalOpen(false);
     setEditingForum(null);
+    setForumForm({ title: '', description: '' });
   };
 
   const handleForumFormChange = (e) => {
@@ -89,97 +105,141 @@ const ManageForum = () => {
     setForumForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const submitForum = async (e) => {
-    e.preventDefault();
-    try {
-      if (editingForum) {
-        await api.put(`/forums/${editingForum._id}`, forumForm);
-        alert('Forum updated successfully');
-      } else {
-        await api.post('/forums', forumForm);
-        alert('Forum created successfully');
+  const submitForum = useCallback(
+    async (e) => {
+      e.preventDefault();
+      try {
+        if (editingForum) {
+          await api.put(`/forums/${editingForum._id}`, forumForm);
+          alert('Forum berhasil diupdate');
+        } else {
+          await api.post('/forums', forumForm);
+          alert('Forum berhasil ditambahkan');
+        }
+        closeForumModal();
+        fetchForums();
+      } catch (err) {
+        console.error('Error saving forum:', err);
+        alert(err.response?.data?.message || 'Gagal menyimpan forum');
       }
-      closeForumModal();
-      fetchForums();
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to save forum');
-    }
-  };
+    },
+    [editingForum, forumForm, closeForumModal, fetchForums]
+  );
 
-  const deleteForum = async (id) => {
-    if (!window.confirm('Are you sure to delete this forum and its comments?')) return;
-    try {
-      await api.delete(`/forums/${id}`);
-      alert('Forum deleted');
-      if (selectedForum && selectedForum._id === id) {
-        setSelectedForum(null);
-        setComments([]);
+  const deleteForum = useCallback(
+    async (id) => {
+      if (!window.confirm('Yakin ingin menghapus forum ini dan komentarnya?'))
+        return;
+      try {
+        await api.delete(`/forums/${id}`);
+        alert('Forum berhasil dihapus');
+        if (selectedForum && selectedForum._id === id) {
+          setSelectedForum(null);
+          setComments([]);
+        }
+        fetchForums();
+      } catch (err) {
+        console.error('Error deleting forum:', err);
+        alert(err.response?.data?.message || 'Gagal menghapus forum');
       }
-      fetchForums();
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to delete forum');
-    }
-  };
+    },
+    [selectedForum, fetchForums]
+  );
 
   // Comment modal handlers
-  const openCommentModal = (forum) => {
-    setSelectedForum(forum);
-    setCommentForm({ content: '' });
-    setEditingComment(null);
-    setIsCommentModalOpen(true);
-    fetchComments(forum._id);
-  };
+  const openCommentModal = useCallback(
+    (forum) => {
+      setSelectedForum(forum);
+      setCommentForm({ content: '' });
+      setEditingComment(null);
+      setIsCommentModalOpen(true);
+      fetchComments(forum._id);
+    },
+    [fetchComments]
+  );
 
   const closeCommentModal = () => {
     setIsCommentModalOpen(false);
     setEditingComment(null);
+    setCommentForm({ content: '' });
   };
 
   const openEditCommentModal = (comment) => {
     setCommentForm({ content: comment.content });
     setEditingComment(comment);
-    setIsCommentModalOpen(true);
   };
 
   const handleCommentFormChange = (e) => {
     setCommentForm({ content: e.target.value });
   };
 
-  const submitComment = async (e) => {
-    e.preventDefault();
-    if (!selectedForum) {
-      alert('No forum selected');
-      return;
-    }
-    try {
-      if (editingComment) {
-        await api.put(`/comments/${editingComment._id}`, commentForm);
-        alert('Comment updated');
-      } else {
-        await api.post('/comments', { ...commentForm, forumID: selectedForum._id });
-        alert('Comment added');
+  const submitComment = useCallback(
+    async (e) => {
+      e.preventDefault();
+      if (!selectedForum) {
+        alert('Tidak ada forum yang dipilih');
+        return;
       }
-      closeCommentModal();
-      fetchComments(selectedForum._id);
-      fetchForums(); // Update commentCount on forums
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to save comment');
-    }
-  };
+      try {
+        const userId = localStorage.getItem('userId');
+        if (!userId) {
+          alert('Anda harus login untuk menambahkan komentar.');
+          navigate('/login');
+          return;
+        }
 
-  const deleteComment = async (id) => {
-    if (!window.confirm('Delete this comment?')) return;
-    try {
-      await api.delete(`/comments/${id}`);
-      alert('Comment deleted');
-      fetchComments(selectedForum._id);
-      fetchForums();
-    } catch (err) {
-      alert(err.response?.data?.message || 'Failed to delete comment');
-    }
-  };
+        if (editingComment) {
+          await api.put(`/comments/${editingComment._id}`, commentForm);
+          alert('Komentar berhasil diupdate');
+        } else {
+          await api.post('/comments', {
+            ...commentForm,
+            forumID: selectedForum._id,
+            userID: userId,
+          });
+          alert('Komentar berhasil ditambahkan');
+        }
+        fetchComments(selectedForum._id);
+        fetchForums();
+      } catch (err) {
+        console.error('Error saving comment:', err);
+        alert(err.response?.data?.message || 'Gagal menyimpan komentar');
+      }
+    },
+    [
+      commentForm,
+      editingComment,
+      selectedForum,
+      fetchComments,
+      fetchForums,
+      navigate,
+    ]
+  );
 
-  if (loading) return <div>Loading forums...</div>;
+  const deleteComment = useCallback(
+    async (id) => {
+      if (!window.confirm('Hapus komentar ini?')) return;
+      try {
+        await api.delete(`/comments/${id}`);
+        alert('Komentar berhasil dihapus');
+        if (selectedForum) {
+          fetchComments(selectedForum._id);
+        }
+        fetchForums();
+      } catch (err) {
+        console.error('Error deleting comment:', err);
+        alert(err.response?.data?.message || 'Gagal menghapus komentar');
+      }
+    },
+    [selectedForum, fetchComments, fetchForums]
+  );
+
+  if (loading)
+    return (
+      <div className="flex justify-center items-center min-h-screen text-xl">
+        Loading forums...
+      </div>
+    );
 
   return (
     <div className="admin-manage-forum p-6 w-full max-w-7xl mx-auto">
@@ -228,8 +288,12 @@ const ManageForum = () => {
                 >
                   {forum.title}
                 </td>
-                <td className="py-3 px-6 border-b whitespace-pre-line">{forum.description}</td>
-                <td className="py-3 px-6 border-b">{forum.commentCount}</td>
+                <td className="py-3 px-6 border-b whitespace-pre-line">
+                  {forum.description}
+                </td>
+                <td className="py-3 px-6 border-b">
+                  {forum.commentCount || 0}
+                </td>
                 <td className="py-3 px-6 border-b space-x-4 whitespace-nowrap">
                   <button
                     onClick={() => openEditForumModal(forum)}
@@ -256,7 +320,6 @@ const ManageForum = () => {
         </tbody>
       </table>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div className="mt-4 flex space-x-2 justify-center">
           <button
@@ -287,9 +350,11 @@ const ManageForum = () => {
         </div>
       )}
 
-      {/* Forum Modal */}
       {isForumModalOpen && (
-        <Modal title={editingForum ? 'Edit Forum' : 'Add New Forum'} onClose={closeForumModal}>
+        <Modal
+          title={editingForum ? 'Edit Forum' : 'Add New Forum'}
+          onClose={closeForumModal}
+        >
           <form onSubmit={submitForum} className="space-y-4">
             <div>
               <label className="block mb-1 font-semibold">Title</label>
@@ -332,16 +397,28 @@ const ManageForum = () => {
         </Modal>
       )}
 
-      {/* Comment Modal */}
       {isCommentModalOpen && (
-        <Modal title={editingComment ? 'Edit Comment' : `Comments for "${selectedForum?.title}"`} onClose={closeCommentModal}>
+        <Modal
+          title={
+            editingComment
+              ? 'Edit Comment'
+              : `Comments for "${selectedForum?.title}"`
+          }
+          onClose={closeCommentModal}
+        >
           <div className="max-h-[300px] overflow-auto mb-4 space-y-3 border-b pb-4">
-            {comments.length === 0 && <p className="text-gray-500">No comments yet.</p>}
+            {comments.length === 0 && (
+              <p className="text-gray-500">No comments yet.</p>
+            )}
             {comments.map((c) => (
-              <div key={c._id} className="border rounded p-3 relative bg-gray-50">
+              <div
+                key={c._id}
+                className="border rounded p-3 relative bg-gray-50"
+              >
                 <p>{c.content}</p>
                 <small className="block mt-1 text-gray-500">
-                  By {c.userID?.firstName || 'Unknown'} on {new Date(c.creationDate).toLocaleString()}
+                  By {c.userID?.firstName || 'Unknown'} on{' '}
+                  {new Date(c.creationDate).toLocaleString()}
                 </small>
                 <div className="absolute top-2 right-2 space-x-2">
                   <button
@@ -392,6 +469,7 @@ const ManageForum = () => {
   );
 };
 
+// Modal component (tetap sama)
 const Modal = ({ title, children, onClose }) => (
   <div
     className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50"
