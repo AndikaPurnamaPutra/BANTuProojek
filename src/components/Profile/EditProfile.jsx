@@ -5,15 +5,17 @@ import api from '../../services/api'; // Import axios instance with base URL and
 const EditProfile = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  // Mengambil profileData dari state, atau objek kosong jika tidak ada
   const profileData = location.state?.profileData || {};
 
   // Simpan data awal menggunakan useRef agar stabil di dependency useEffect
+  // Data ini akan diisi ulang dari backend saat komponen mount untuk memastikan selalu terbaru
   const initialData = useRef({
     firstName: profileData.firstName || '',
     bio: profileData.bio || '',
     email: profileData.email || '',
     phone: profileData.contactInfo?.phone || '',
-    profilePicUrl: profileData.profile || null,
+    profilePicUrl: profileData.profilePic || null, // Pastikan ini mengambil profilePic dari respons backend
   });
 
   // State form
@@ -37,13 +39,64 @@ const EditProfile = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
-        setProfilePicture(file);
+        setProfilePicture(file); // Simpan file asli untuk diupload
       };
       reader.readAsDataURL(file);
     } else {
       alert('Mohon upload file gambar dengan format jpg, jpeg, png, atau webp');
+      // **PERBAIKAN**: Clear input dan preview jika file tidak valid
+      e.target.value = null; // Clear input file
+      setImagePreview(initialData.current.profilePicUrl); // Kembali ke preview awal
+      setProfilePicture(null); // Reset file
     }
   };
+
+  // Efek untuk mengambil data profil terbaru dari backend saat komponen dimuat
+  useEffect(() => {
+    const fetchCurrentProfile = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          navigate('/login'); // Redirect jika tidak ada token
+          return;
+        }
+        const response = await api.get('/users/profile'); // Ambil data profil terbaru
+        const currentProfile = response.data;
+
+        // **PERBAIKAN**: Perbarui initialData useRef dengan data terbaru dari backend
+        initialData.current = {
+          firstName: currentProfile.firstName || '',
+          bio: currentProfile.bio || '',
+          email: currentProfile.email || '',
+          phone: currentProfile.contactInfo?.phone || '',
+          profilePicUrl: currentProfile.profilePic || null,
+        };
+
+        // Perbarui state lokal dengan data terbaru yang dimuat
+        setName(initialData.current.firstName);
+        setDescription(initialData.current.bio);
+        setEmail(initialData.current.email);
+        setPhone(initialData.current.phone);
+        setImagePreview(initialData.current.profilePicUrl);
+        setIsButtonEnabled(false); // Reset tombol setelah load data baru
+      } catch (err) {
+        console.error('Error fetching current profile:', err);
+        setError(err.response?.data?.message || 'Gagal memuat data profil.');
+        // Interceptor Axios di api.js sudah menangani redirect pada 401/403,
+        // jadi tidak perlu `localStorage.removeItem('token'); navigate('/login');` di sini
+      }
+    };
+
+    // Panggil fetchCurrentProfile jika profileData dari location.state kosong atau tidak lengkap
+    // Ini memastikan data selalu terbaru jika pengguna langsung mengakses /edit-profile atau refresh
+    if (
+      !profileData ||
+      Object.keys(profileData).length === 0 ||
+      !profileData.firstName
+    ) {
+      fetchCurrentProfile();
+    }
+  }, [navigate, profileData]); // Tambahkan profileData ke dependency array
 
   // Cek perubahan data agar tombol aktif jika ada perubahan
   useEffect(() => {
@@ -52,7 +105,7 @@ const EditProfile = () => {
       description !== initialData.current.bio ||
       email !== initialData.current.email ||
       phone !== initialData.current.phone ||
-      profilePicture !== null;
+      profilePicture !== null; // True jika ada file baru dipilih
 
     setIsButtonEnabled(hasChanges);
   }, [name, description, email, phone, profilePicture]);
@@ -60,26 +113,44 @@ const EditProfile = () => {
   // Update data profil teks saja
   const updateProfileData = async () => {
     try {
-      const token = localStorage.getItem('token');
-
-      // Siapkan payload dinamis hanya field yang berubah (atau kamu mau update)
       const payload = {};
 
-      if (name && name !== initialData.current.firstName)
+      // **PERBAIKAN**: Kirim hanya jika ada perubahan DAN tidak kosong
+      if (name !== initialData.current.firstName) {
+        if (!name.trim()) throw new Error('Nama tidak boleh kosong.');
         payload.firstName = name;
-      if (description && description !== initialData.current.bio)
+      }
+      if (description !== initialData.current.bio) {
+        if (!description.trim())
+          throw new Error('Deskripsi tidak boleh kosong.');
         payload.bio = description;
-      if (email && email !== initialData.current.email) payload.email = email;
-      if (phone && phone !== initialData.current.phone)
-        payload.contactInfo = { phone };
+      }
+      if (email !== initialData.current.email) {
+        if (!email.trim()) throw new Error('Email tidak boleh kosong.');
+        // **PERBAIKAN**: Tambahkan validasi format email dasar
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email))
+          throw new Error('Format email tidak valid.');
+        payload.email = email;
+      }
+      // **PERBAIKAN**: Kirim contactInfo sebagai objek, dan hanya jika berubah
+      // Jika nomor telepon dikosongkan, kirim string kosong
+      if (phone !== initialData.current.phone) {
+        payload.contactInfo = { phone: phone.trim() }; // Trim phone number
+      }
 
+      // Pastikan payload tidak kosong sebelum mengirim request PUT
+      if (Object.keys(payload).length === 0) {
+        return null; // Tidak ada perubahan teks untuk dikirim
+      }
+
+      // **PERBAIKAN**: Axios interceptor sudah menangani Authorization header
       const config = {
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       };
-      const response = await api.put('/users/profile', payload);
+      const response = await api.put('/users/profile', payload, config);
       return response.data;
     } catch (err) {
       console.error('Response error:', err.response?.data);
@@ -89,15 +160,14 @@ const EditProfile = () => {
 
   // Upload foto profil jika ada perubahan foto
   const uploadProfilePic = async () => {
-    if (!profilePicture) return null;
+    if (!profilePicture) return null; // Tidak ada file baru untuk diupload
     try {
-      const token = localStorage.getItem('token');
       const formData = new FormData();
       formData.append('profilePic', profilePicture);
 
+      // **PERBAIKAN**: Axios interceptor sudah menangani Authorization header
       const config = {
         headers: {
-          Authorization: `Bearer ${token}`,
           'Content-Type': 'multipart/form-data',
         },
       };
@@ -110,29 +180,61 @@ const EditProfile = () => {
 
   const handleSaveProfile = async (e) => {
     e.preventDefault();
-    if (!isButtonEnabled) return; // prevent submit if no changes
+    if (!isButtonEnabled) return; // Mencegah submit jika tidak ada perubahan
 
     setLoading(true);
     setError(null);
 
     try {
-      await updateProfileData();
+      let updatedTextData = null;
+      let updatedPicData = null;
 
-      if (profilePicture) {
-        await uploadProfilePic();
+      // Panggil updateProfileData hanya jika ada perubahan teks
+      const hasTextChanges =
+        name !== initialData.current.firstName ||
+        description !== initialData.current.bio ||
+        email !== initialData.current.email ||
+        phone !== initialData.current.phone;
+
+      if (hasTextChanges) {
+        updatedTextData = await updateProfileData();
       }
 
+      if (profilePicture) {
+        // Hanya upload jika ada file baru
+        updatedPicData = await uploadProfilePic();
+      }
+
+      // **PERBAIKAN**: Perbarui initialData.current dengan data terbaru
+      // Menggunakan operator nullish coalescing (??) untuk fallback ke nilai lama jika API tidak mengembalikan field tertentu
+      initialData.current = {
+        firstName: updatedTextData?.firstName ?? name,
+        bio: updatedTextData?.bio ?? description,
+        email: updatedTextData?.email ?? email,
+        phone: updatedTextData?.contactInfo?.phone ?? phone, // Ambil dari contactInfo
+        profilePicUrl: updatedPicData?.profilePic ?? imagePreview,
+      };
+
+      // Reset profilePicture state karena sudah diupload
+      setProfilePicture(null);
+
       alert('Profil berhasil disimpan!');
-      navigate('/profile');
+      // Tidak perlu navigate, karena data di-refresh di useEffect mount dan initialData sudah di-update
+      // Anda bisa aktifkan ini jika Anda ingin memaksa navigasi kembali setelah simpan
+      // navigate('/profile');
     } catch (err) {
       // Tangani error validasi dengan lebih jelas
       if (err.response?.data?.errors) {
+        // Error dari express-validator (backend)
         const messages = err.response.data.errors
           .map((e) => `${e.param}: ${e.msg}`)
-          .join(', ');
-        setError(`Validation failed: ${messages}`);
+          .join('\n'); // **PERBAIKAN**: Gunakan \n untuk baris baru
+        setError(`Validation failed:\n${messages}`);
       } else {
-        setError(err.response?.data?.message || 'Gagal menyimpan profil');
+        // Error generik atau dari throw new Error di frontend
+        setError(
+          err.response?.data?.message || err.message || 'Gagal menyimpan profil'
+        );
       }
     } finally {
       setLoading(false);
