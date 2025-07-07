@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/extension-starter-kit'; // Pastikan import yang benar untuk extension
+import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Underline from '@tiptap/extension-underline';
 
