@@ -2,8 +2,8 @@ import { Link, useLocation } from 'react-router-dom';
 
 const NavLinks = ({
   isLoggedIn,
-  onShowLoginPopup,
-  onShowLoginPopupForJob,
+  // onShowLoginPopup,
+  // onShowLoginPopupForJob,
   onLinkClick = () => {},
 }) => {
   const location = useLocation();
@@ -47,7 +47,7 @@ const NavLinks = ({
       >
         Artikel
       </Link>
-      {isLoggedIn ? (
+      {/* {isLoggedIn ? (
         <Link
           to="/job"
           className={getLinkClassName('/job')}
@@ -68,7 +68,14 @@ const NavLinks = ({
         >
           Loker
         </button>
-      )}
+      )} */}
+      <Link // Loker selalu menjadi Link langsung
+        to="/job"
+        className={getLinkClassName('/job')}
+        onClick={onLinkClick}
+      >
+        Loker
+      </Link>
       <Link to="/about-us" className={getLinkClassName('/about-us')}>
         Tentang Kami
       </Link>
