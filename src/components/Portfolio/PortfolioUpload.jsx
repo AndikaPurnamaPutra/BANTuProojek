@@ -20,7 +20,7 @@ const PortfolioUpload = () => {
     null,
   ]);
 
-  const [uploadedMediaUrls, setUploadedMediaUrls] = useState([]);
+  // const [uploadedMediaUrls, setUploadedMediaUrls] = useState([]);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -68,15 +68,32 @@ const PortfolioUpload = () => {
     },
   });
 
+  // Panggil checkFormValidity setiap kali state relevan berubah
+  // Initial check and on changes
+  useEffect(() => {
+    // Pastikan editor sudah diinisialisasi sebelum mencoba getHTML
+    if (editor) {
+      checkFormValidity(title, description, selectedCategory, mainFile);
+    }
+  }, [title, description, selectedCategory, mainFile, editor]); // Tambahkan editor ke dependency array
+
   const handleMainFileChange = (files) => {
     const file = files[0];
 
-    if (!file) return;
+    if (!file) {
+      // Tambahkan ini
+      setMainFile(null);
+      setMainFilePreview(null);
+      setFileError(''); // Hapus error jika tidak ada file
+      checkFormValidity(title, description, selectedCategory, null); // Perbarui validitas form
+      return;
+    }
 
     if (!validFileTypes.includes(file.type)) {
       setFileError('Format file utama tidak didukung.');
       setMainFile(null);
       setMainFilePreview(null);
+      setIsButtonEnabled(false);
       return;
     }
 
@@ -84,6 +101,7 @@ const PortfolioUpload = () => {
       setFileError('Ukuran file utama melebihi 10MB.');
       setMainFile(null);
       setMainFilePreview(null);
+      setIsButtonEnabled(false);
       return;
     }
 
@@ -99,13 +117,22 @@ const PortfolioUpload = () => {
 
   const handleAdditionalFileChange = (index, files) => {
     const file = files[0];
+    const updatedFiles = [...additionalFiles]; // Tambahkan di sini (sekali saja)
+    const updatedPreviews = [...additionalFilePreviews];
 
-    if (!file) return;
+    if (!file) {
+      updatedFiles[index] = null;
+      updatedPreviews[index] = null;
+      setAdditionalFiles(updatedFiles);
+      setAdditionalFilePreviews(updatedPreviews);
+      setFileError(''); // Hapus error jika file dibatalkan
+      return;
+    }
 
     if (!validFileTypes.includes(file.type)) {
       setFileError('Format file tambahan tidak didukung.');
-      const updatedFiles = [...additionalFiles];
       updatedFiles[index] = null;
+      updatedPreviews[index] = null;
       setAdditionalFiles(updatedFiles);
 
       const updatedPreviews = [...additionalFilePreviews];
@@ -116,11 +143,9 @@ const PortfolioUpload = () => {
 
     if (file.size > MAX_FILE_SIZE) {
       setFileError('Ukuran file tambahan melebihi 10MB.');
-      const updatedFiles = [...additionalFiles];
       updatedFiles[index] = null;
       setAdditionalFiles(updatedFiles);
 
-      const updatedPreviews = [...additionalFilePreviews];
       updatedPreviews[index] = null;
       setAdditionalFilePreviews(updatedPreviews);
       return;
@@ -128,7 +153,6 @@ const PortfolioUpload = () => {
 
     setFileError('');
 
-    const updatedFiles = [...additionalFiles];
     updatedFiles[index] = file;
     setAdditionalFiles(updatedFiles);
 
@@ -143,18 +167,29 @@ const PortfolioUpload = () => {
 
   const handleCategoryChange = (e) => {
     setSelectedCategory(e.target.value);
-    checkFormValidity(title, description, e.target.value, mainFile);
+    const currentDescription = editor ? editor.getHTML() : description;
+    checkFormValidity(title, currentDescription, e.target.value, mainFile);
   };
 
   const handleTitleChange = (e) => {
     setTitle(e.target.value);
-    checkFormValidity(e.target.value, description, selectedCategory, mainFile);
+    const currentDescription = editor ? editor.getHTML() : description;
+
+    checkFormValidity(
+      e.target.value,
+      currentDescription,
+      selectedCategory,
+      mainFile
+    );
   };
 
   const checkFormValidity = (titleVal, descVal, categoryVal, mainFileVal) => {
+    const isDescriptionEmpty = editor && editor.isEmpty; // Gunakan editor.isEmpty
+    const hasValidDescription =
+      !isDescriptionEmpty && descVal.replace(/<[^>]*>/g, '').trim().length > 0; // Hapus tag HTML, lalu trim, lalu cek length
     if (
       titleVal.trim() &&
-      descVal.trim() &&
+      hasValidDescription &&
       categoryVal.trim() &&
       mainFileVal
     ) {
@@ -167,14 +202,24 @@ const PortfolioUpload = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!isButtonEnabled) return;
+    if (!isButtonEnabled) {
+      // Tampilkan pesan error jika tombol disabled karena form tidak valid
+      if (!title.trim()) alert('Judul wajib diisi.');
+      else if (!description.trim() || (editor && editor.isEmpty))
+        alert('Deskripsi wajib diisi.');
+      else if (!selectedCategory.trim()) alert('Kategori wajib dipilih.');
+      else if (!mainFile) alert('File karya utama wajib diunggah.');
+      return;
+    }
 
     setLoading(true);
 
     try {
       const formData = new FormData();
       formData.append('title', title.trim());
-      formData.append('description', description.trim());
+      // Perbaikan: Pastikan description yang dikirim tidak kosong (misal hanya tag HTML kosong)
+      const cleanedDescription = description.replace(/<[^>]*>/g, '').trim(); // Hapus tag HTML
+      formData.append('description', cleanedDescription || ''); // Kirim string kosong jika setelah cleanup jadi kosong
       formData.append('category', selectedCategory.trim().toLowerCase());
 
       if (mainFile) formData.append('media', mainFile);
@@ -187,14 +232,12 @@ const PortfolioUpload = () => {
       const config = {
         headers: {
           'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${token}`,
         },
       };
 
       const response = await api.post('/portfolios', formData, config);
 
       alert('Portfolio berhasil diunggah!');
-      setUploadedMediaUrls(response.data.media || []);
 
       // Reset form
       setMainFile(null);
@@ -205,6 +248,7 @@ const PortfolioUpload = () => {
       setDescription('');
       setSelectedCategory('');
       setFileError('');
+      editor?.commands.clearContent();
       navigate('/profile');
     } catch (error) {
       console.error(error);
@@ -229,7 +273,7 @@ const PortfolioUpload = () => {
           {/* File utama */}
           <div className="flex flex-col gap-3">
             <label className="text-lg font-light text-[#7F909F]">
-              File Karya Utama
+              File Karya Utama<span className="text-red-500">*</span>
             </label>
             <div
               onClick={() => document.getElementById('main-file-input').click()}
