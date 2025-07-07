@@ -9,7 +9,7 @@ import { register } from '../services/userService';
 const Register = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    namaDepan: '',
+    namaLengkap: '',
     namaPengguna: '',
     email: '',
     password: '',
@@ -47,7 +47,7 @@ const Register = () => {
 
   const handleFinish = () => {
     if (
-      !formData.namaDepan ||
+      !formData.namaLengkap ||
       !formData.namaPengguna ||
       !formData.email ||
       !formData.password ||
@@ -65,7 +65,7 @@ const Register = () => {
     setLoading(true);
 
     const data = new FormData();
-    data.append('firstName', formData.namaDepan);
+    data.append('firstName', formData.namaLengkap);
     data.append('username', formData.namaPengguna);
     data.append('email', formData.email);
     data.append('password', formData.password);
