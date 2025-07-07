@@ -48,12 +48,12 @@ const PortfolioFormHire = () => {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     // Filter input hanya angka untuk estimasiAnggaranMin dan estimasiAnggaranMax
-    if (
-      (name === 'estimasiAnggaranMin' || name === 'estimasiAnggaranMax') &&
-      /[^0-9]/.test(value)
-    ) {
-      return; // Jangan perbarui state jika karakter non-angka dimasukkan
-    }
+    // if (
+    //   (name === 'estimasiAnggaranMin' || name === 'estimasiAnggaranMax') &&
+    //   /[^0-9]/.test(value)
+    // ) {
+    //   return; // Jangan perbarui state jika karakter non-angka dimasukkan
+    // }
     setFormData((prev) => ({
       ...prev,
       [name]: value,
@@ -91,20 +91,30 @@ const PortfolioFormHire = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateForm()) return;
-
     const token = localStorage.getItem('token');
-    const artisanID = localStorage.getItem('userId');
+    const userRole = localStorage.getItem('userRole');
+    const userId = localStorage.getItem('userId'); // Anda mungkin masih butuh ini untuk beberapa logika frontend, tapi tidak untuk dikirim ke backend
 
-    if (!token) {
+    if (!token || userRole !== 'artisan') {
+      alert('Anda harus login sebagai artisan untuk membuat proyek.');
       setShowLoginPopup(true);
       return;
     }
 
-    if (!artisanID) {
-      alert('User ID tidak ditemukan, silakan login ulang.');
-      return;
-    }
+    if (!validateForm()) return;
+
+    // const token = localStorage.getItem('token');
+    // const artisanID = localStorage.getItem('userId');
+
+    // if (!token) {
+    //   setShowLoginPopup(true);
+    //   return;
+    // }
+
+    // if (!artisanID) {
+    //   alert('User ID tidak ditemukan, silakan login ulang.');
+    //   return;
+    // }
 
     if (!designerID) {
       alert(
@@ -120,8 +130,10 @@ const PortfolioFormHire = () => {
         deskripsi: formData.deskripsi,
         estimasiPengerjaan: Number(formData.estimasiPengerjaan),
         estimasiAnggaranMin: Number(formData.estimasiAnggaranMin),
-        estimasiAnggaranMax: Number(formData.estimasiAnggaranMax),
-        artisanID, // Ini akan ditimpa oleh req.user.userId di backend, tapi bagus untuk disertakan demi kejelasan
+        estimasiAnggaranMax: formData.estimasiAnggaranMax
+          ? Number(formData.estimasiAnggaranMax)
+          : undefined,
+        // artisanID,
         designerID, // Kirim designerID
       });
 
@@ -249,7 +261,7 @@ const PortfolioFormHire = () => {
                       Rp
                     </span>
                     <input
-                      type="text"
+                      type="number"
                       id="estimasiAnggaranMin"
                       name="estimasiAnggaranMin"
                       value={formData.estimasiAnggaranMin}
@@ -279,21 +291,21 @@ const PortfolioFormHire = () => {
                 </div>
 
                 {/* Keterangan Minimal Anggaran */}
-                {formData.estimasiAnggaranMin &&
+                {/* {formData.estimasiAnggaranMin &&
                   Number(formData.estimasiAnggaranMin) < 100000 && (
                     <p className="text-red-500 text-sm mt-2">
                       Minimal anggaran: Rp 100.000
                     </p>
-                  )}
+                  )} */}
 
                 {/* Keterangan Maksimal Anggaran */}
-                {formData.estimasiAnggaranMax &&
+                {/* {formData.estimasiAnggaranMax &&
                   Number(formData.estimasiAnggaranMax) <
                     Number(formData.estimasiAnggaranMin) && (
                     <p className="text-red-500 text-sm mt-2">
                       Anggaran maksimal harus lebih besar dari anggaran minimal.
                     </p>
-                  )}
+                  )} */}
 
                 {errors.estimasiAnggaranMin && (
                   <p className="text-red-500 text-sm mt-2">
