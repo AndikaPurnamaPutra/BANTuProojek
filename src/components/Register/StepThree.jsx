@@ -79,7 +79,7 @@ const StepThree = ({ formData, handleChange, nextStep, prevStep }) => {
                   />
                   <div>
                     <label htmlFor="artisan" className="text-lg text-black">
-                      Artisan
+                      Klien
                     </label>
                     <p className="text-sm font-light text-[#7F909F]">
                       Aku mau mencari desainer
